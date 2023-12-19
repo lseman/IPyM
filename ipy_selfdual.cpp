@@ -7,7 +7,7 @@
 
 #include "cholmod.h"
 
-#define EIGEN_USE_MKL_ALL
+//#define EIGEN_USE_MKL_ALL
 
 // create define to decide between augmented and normal
 #define AUGMENTED
@@ -29,7 +29,7 @@
 
 #include <stdexcept>
 //#include <tuple>
-
+#include <omp.h>
 // reader libraries
 //#include <fstream>
 //#include <sstream>
@@ -41,6 +41,7 @@
 // #include <cusolverRf.h>
 
 using namespace Eigen;
+
 
 Eigen::SparseMatrix<double>
 convertToSparseDiagonal(const Eigen::VectorXd &vec) {
@@ -222,6 +223,7 @@ public:
 
         c.nmethods = 1;
         c.method[0].ordering = CHOLMOD_METIS;
+        c.postorder = true;
 
 // only if define augmented = 1
 #ifdef AUGMENTED
@@ -430,7 +432,7 @@ struct Residuals {
 
 void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
                       const VectorXd &s, const VectorXd &v, const VectorXd &w,
-                      const MatrixXd &A, const VectorXd &b, const VectorXd &c,
+                      const SparseMatrix<double> &A, const VectorXd &b, const VectorXd &c,
                       const VectorXd &ubv, const VectorXi &ubi,
                       const VectorXd &vbv, const VectorXi &vbi, double tau,
                       double kappa) {
@@ -443,24 +445,16 @@ void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
     // uper bound residual
     res.ru.noalias() = -v;
     for (int i = 0; i < ubi.size(); ++i) {
-        res.ru(i) -= x(ubi(i));
+        res.ru(ubi(i)) -= x(ubi(i));
     }
     res.ru.array() += tau * ubv.array();
     res.run = res.ru.norm();
-
-    // calculate rv and its norm
-    // lower bound residuals
-    // res.rl.noalias() = -l;
-    // for (int i : vbi) {
-    //    res.rl(i) += x(i);
-    //}
-    // res.rln = res.rl.norm();
 
     // Calculate rd and its norm
     // dual residual
     res.rd.noalias() = tau * c - (A.transpose() * lambda + s);
     for (int i = 0; i < ubi.size(); ++i) {
-      res.rd(ubi(i)) += x(ubi(i));
+        res.rd(ubi(i)) += x(ubi(i));
     }
 
     res.rdn = res.rd.norm();
@@ -601,6 +595,9 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
                  const Eigen::VectorXd &lo, const Eigen::VectorXd &hi,
                  const Eigen::VectorXd &sense, const double tol) {
 
+
+    //omp_set_num_threads(32);
+    //Eigen::setNbThreads(32);
     // Convert to standard form
     Eigen::SparseMatrix<double> A;
     Eigen::VectorXd b;
