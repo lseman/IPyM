@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsuitesparse-dev pybind11-dev python3 python3-dev metis libmetis5
+          sudo apt-get install -y libsuitesparse-dev pybind11-dev python3 python3-dev metis libmetis5 libmetis-dev
 
       - name: Configure
         run: ${{ matrix.cmake-config-env-vars }} cmake -B build -S .
