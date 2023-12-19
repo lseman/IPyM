@@ -7,7 +7,7 @@
 
 #include "cholmod.h"
 
-#define EIGEN_USE_MKL_ALL
+//#define EIGEN_USE_MKL_ALL
 
 // create define to decide between augmented and normal
 #define AUGMENTED
