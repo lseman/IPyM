@@ -25,6 +25,7 @@ add_library(ipy_selfdual MODULE ipy_selfdual.cpp)
 # Link libraries
 target_link_libraries(ipy_selfdual PRIVATE
     -L/usr/lib
+    -L/usr/lib/x86_64-linux-gnu
     -lgomp -lpthread -lm -ldl -lgfortran
     -lmetis
 )
