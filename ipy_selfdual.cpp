@@ -4,52 +4,45 @@
  * Email: laio@ieee.org
  */
 
-
 #include "cholmod.h"
 
-//#define EIGEN_USE_MKL_ALL
+// #define EIGEN_USE_MKL_ALL
 
 // create define to decide between augmented and normal
 #define AUGMENTED
 
 #define EIGEN_INITIALIZE_MATRICES_BY_ZERO
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <iostream>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
 // #include <Eigen/CholmodSupport>
 // #include <Eigen/IterativeLinearSolvers>
 #include <algorithm>
 #include <limits>
-#include <tuple>
-
-// reader libraries
-// #include <omp.h>
-
-#include <stdexcept>
-//#include <tuple>
 #include <omp.h>
-// reader libraries
-//#include <fstream>
-//#include <sstream>
-//#include <string>
+#include <stdexcept>
+#include <tuple>
 
 #include <vector>
 
-// #include <cusolverDn.h>
-// #include <cusolverRf.h>
-
 using namespace Eigen;
-
 
 Eigen::SparseMatrix<double>
 convertToSparseDiagonal(const Eigen::VectorXd &vec) {
     Eigen::SparseMatrix<double> mat(vec.size(), vec.size());
-    mat.setIdentity();
+
+    // Reserve space for diagonal elements
+    mat.reserve(Eigen::VectorXd::Constant(vec.size(), 1));
+
     for (int i = 0; i < vec.size(); ++i) {
-        mat.coeffRef(i, i) = vec(i);
+        mat.insert(i, i) = vec(i);
     }
+
+    // Make the sparse matrix compressed
+    // mat.makeCompressed();
+
     return mat;
 }
 
@@ -178,8 +171,8 @@ void convert_to_standard_form(
         }
     }
 
-    //int csize = cs.size();
-    //int bsize = bs.size();
+    // int csize = cs.size();
+    // int bsize = bs.size();
 
     std::vector<Eigen::Triplet<double>> triplets;
 
@@ -210,12 +203,12 @@ public:
     Eigen::SparseMatrix<double> S;
     Eigen::SparseMatrix<double> AD;
     Eigen::SparseMatrix<double> D;
-    //Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> F;
+    // Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> F;
     bool firstFactorization = true;
 
     cholmod_common c;
     cholmod_factor *L;
-    cholmod_dense *X = NULL, *Y = NULL, *E = NULL ;
+    cholmod_dense *X = NULL, *Y = NULL, *E = NULL;
 
     SparseSolver() {
         cholmod_start(&c);
@@ -250,68 +243,68 @@ public:
 
     void factorizeMatrix(
         const Eigen::SparseMatrix<double, Eigen::RowMajor, int> &matrix) {
-        cholmod_sparse A = viewAsCholmod(matrix);
+        cholmod_sparse *A = viewAsCholmod(matrix);
 
         if (firstFactorization) {
             if (L) {
                 cholmod_free_factor(&L, &c);
             }
-            L = cholmod_analyze(&A, &c);
+            L = cholmod_analyze(A, &c);
             firstFactorization = false;
         }
 
-        cholmod_factorize(&A, L, &c);
+        cholmod_factorize(A, L, &c);
     }
 
     Eigen::VectorXd solve(const Eigen::VectorXd &rhs) {
-        cholmod_dense b = viewAsCholmod(rhs);
-        
-        cholmod_solve2(CHOLMOD_A, L, &b, NULL, &X, NULL, &Y, &E, &c);
+        cholmod_dense *b = viewAsCholmod(rhs);
+
+        cholmod_solve2(CHOLMOD_A, L, b, NULL, &X, NULL, &Y, &E, &c);
         Eigen::VectorXd result = viewAsEigen(X);
 
-        //cholmod_free_dense (&X, &c) ;
-        //cholmod_free_dense (&Y, &c) ;
-        //cholmod_free_dense (&E, &c) ;
-        //cholmod_free_dense(&x, &c);
+        // cholmod_free_dense (&X, &c) ;
+        // cholmod_free_dense (&Y, &c) ;
+        // cholmod_free_dense (&E, &c) ;
+        // cholmod_free_dense(&x, &c);
         return result;
     }
 
 private:
-    static cholmod_sparse viewAsCholmod(
+    static cholmod_sparse *viewAsCholmod(
         const Eigen::SparseMatrix<double, Eigen::RowMajor, int> &matrix) {
-        cholmod_sparse result;
-        result.nrow = matrix.rows();
-        result.ncol = matrix.cols();
-        result.p = const_cast<int *>(matrix.outerIndexPtr());
-        result.i = const_cast<int *>(matrix.innerIndexPtr());
+        cholmod_sparse *result = new cholmod_sparse;
+        result->nrow = matrix.rows();
+        result->ncol = matrix.cols();
+        result->p = const_cast<int *>(matrix.outerIndexPtr());
+        result->i = const_cast<int *>(matrix.innerIndexPtr());
 
-        result.x = const_cast<double *>(matrix.valuePtr());
-        result.z = nullptr;
-        result.stype = -1;
-        result.itype = CHOLMOD_INT;
-        result.xtype = CHOLMOD_REAL;
-        result.dtype = CHOLMOD_DOUBLE;
-        result.sorted = 1;
-        result.packed = 1;
+        result->x = const_cast<double *>(matrix.valuePtr());
+        result->z = nullptr;
+        result->stype = -1;
+        result->itype = CHOLMOD_INT;
+        result->xtype = CHOLMOD_REAL;
+        result->dtype = CHOLMOD_DOUBLE;
+        result->sorted = 1;
+        result->packed = 1;
         return result;
     }
 
-    static cholmod_dense viewAsCholmod(const Eigen::VectorXd &vector) {
-        cholmod_dense result;
-        result.nrow = vector.size();
-        result.ncol = 1;
-        result.nzmax = vector.size();
-        result.d = vector.size();
-        result.x = const_cast<double *>(vector.data());
-        result.z = nullptr;
-        result.xtype = CHOLMOD_REAL;
-        result.dtype = CHOLMOD_DOUBLE;
+    static cholmod_dense *viewAsCholmod(const Eigen::VectorXd &vector) {
+        cholmod_dense *result = new cholmod_dense;
+        result->nrow = vector.size();
+        result->ncol = 1;
+        result->nzmax = vector.size();
+        result->d = vector.size();
+        result->x = const_cast<double *>(vector.data());
+        result->z = nullptr;
+        result->xtype = CHOLMOD_REAL;
+        result->dtype = CHOLMOD_DOUBLE;
         return result;
     }
 
-    static Eigen::VectorXd viewAsEigen(cholmod_dense *vector) {
-        return Eigen::VectorXd::Map(reinterpret_cast<double *>(vector->x),
-                                    vector->nrow);
+    static Eigen::VectorXd viewAsEigen(cholmod_dense *vectorPtr) {
+        return Eigen::VectorXd::Map(reinterpret_cast<double *>(vectorPtr->x),
+                                    vectorPtr->nrow);
     }
 };
 
@@ -332,48 +325,31 @@ void start_linear_solver(SparseSolver &ls,
         convertToSparseDiagonal(-ls.theta - ls.regP);
     Eigen::SparseMatrix<double> bottomRight = convertToSparseDiagonal(ls.regD);
 
-    // Assuming the block matrix size is known, you can directly construct the
-    // matrix `S`
+    // S_ is known, reserve space for it
     Eigen::SparseMatrix<double> S_(ls.n + ls.m, ls.n + ls.m);
 
-    typedef Eigen::Triplet<double> Triplet;
-    std::vector<Triplet> tripletList;
+    // Reserving space for tripletList
+    int estimated_nonzeros =
+        topLeft.nonZeros() + 2 * topRight.nonZeros() + bottomRight.nonZeros();
+    std::vector<Eigen::Triplet<double>> tripletList;
+    tripletList.reserve(estimated_nonzeros);
 
-    // For topLeft matrix
-    for (int k = 0; k < topLeft.outerSize(); ++k) {
-        for (Eigen::SparseMatrix<double>::InnerIterator it(topLeft, k); it;
-             ++it) {
-            tripletList.push_back(Triplet(it.row(), it.col(), it.value()));
+    // Insert topLeft, topRight, bottomLeft, bottomRight matrices
+    auto insertBlock = [&](const Eigen::SparseMatrix<double> &block,
+                           int startRow, int startCol) {
+        for (int k = 0; k < block.outerSize(); ++k) {
+            for (Eigen::SparseMatrix<double>::InnerIterator it(block, k); it;
+                 ++it) {
+                tripletList.emplace_back(it.row() + startRow,
+                                         it.col() + startCol, it.value());
+            }
         }
-    }
+    };
 
-    // For topRight matrix
-    for (int k = 0; k < topRight.outerSize(); ++k) {
-        for (Eigen::SparseMatrix<double>::InnerIterator it(topRight, k); it;
-             ++it) {
-            tripletList.push_back(
-                Triplet(it.row(), it.col() + topLeft.cols(), it.value()));
-        }
-    }
-
-    // For bottomLeft matrix
-    for (int k = 0; k < bottomLeft.outerSize(); ++k) {
-        for (Eigen::SparseMatrix<double>::InnerIterator it(bottomLeft, k); it;
-             ++it) {
-            tripletList.push_back(
-                Triplet(it.row() + topLeft.rows(), it.col(), it.value()));
-        }
-    }
-
-    // For bottomRight matrix
-    for (int k = 0; k < bottomRight.outerSize(); ++k) {
-        for (Eigen::SparseMatrix<double>::InnerIterator it(bottomRight, k); it;
-             ++it) {
-            tripletList.push_back(Triplet(it.row() + topRight.rows(),
-                                          it.col() + bottomLeft.cols(),
-                                          it.value()));
-        }
-    }
+    insertBlock(topLeft, 0, 0);
+    insertBlock(topRight, 0, ls.n);
+    insertBlock(bottomLeft, ls.n, 0);
+    insertBlock(bottomRight, ls.n, ls.n);
 
     // Finally, set the values from the triplets
     S_.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -399,15 +375,15 @@ void update_linear_solver(SparseSolver &ls, const Eigen::VectorXd &theta,
     combinedValues.head(ls.n) = -theta - regP;
     combinedValues.tail(ls.m) = regD;
 
-    int total = ls.n + ls.m;
-
-    for (int i = 0; i < total; i++) {
+    // Efficiently update diagonal elements
+    for (int i = 0; i < combinedValues.size(); i++) {
         ls.S.coeffRef(i, i) = combinedValues[i];
     }
 
     // Refactorize
     ls.factorizeMatrix(ls.S);
 #else
+
     // define lhs for normal equations
     Eigen::SparseMatrix<double> lhs(ls.n + ls.m, ls.n + ls.m);
     // define lhs as   A (\Theta^{-1} + R_{p})^{-1} A^{\top} + R_{d}
@@ -432,14 +408,14 @@ struct Residuals {
 
 void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
                       const VectorXd &s, const VectorXd &v, const VectorXd &w,
-                      const SparseMatrix<double> &A, const VectorXd &b, const VectorXd &c,
-                      const VectorXd &ubv, const VectorXi &ubi,
-                      const VectorXd &vbv, const VectorXi &vbi, double tau,
-                      double kappa) {
+                      const SparseMatrix<double> &A, const VectorXd &b,
+                      const VectorXd &c, const VectorXd &ubv,
+                      const VectorXi &ubi, const VectorXd &vbv,
+                      const VectorXi &vbi, double tau, double kappa) {
     // Calculate rp and its norm
     // primal residual
-    res.rp.noalias() =  tau * b - A * x;
-    res.rpn = res.rp.norm();
+    res.rp.noalias() = tau * b - A * x;
+    // res.rpn = res.rp.norm();
 
     // Calculate ru and its norm
     // uper bound residual
@@ -448,7 +424,7 @@ void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
         res.ru(ubi(i)) -= x(ubi(i));
     }
     res.ru.array() += tau * ubv.array();
-    res.run = res.ru.norm();
+    // res.run = res.ru.norm();
 
     // Calculate rd and its norm
     // dual residual
@@ -457,7 +433,7 @@ void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
         res.rd(ubi(i)) += x(ubi(i));
     }
 
-    res.rdn = res.rd.norm();
+    // res.rdn = res.rd.norm();
 
     // Calculate rg and its norm
     // gap residual
@@ -507,25 +483,25 @@ void solve_augsys(Eigen::VectorXd &delta_x, Eigen::VectorXd &delta_y,
                   const Eigen::VectorXd &theta_vw, const Eigen::VectorXi &ubi,
                   const Eigen::VectorXd &xi_p, const Eigen::VectorXd &xi_d,
                   const Eigen::VectorXd &xi_u) {
-    // Initialize delta_z to zero
-    delta_z.setZero(ubi.size());
+    // Efficiently initialize delta_z with the right size and set to zero
+    delta_z = Eigen::VectorXd::Zero(ubi.size());
 
-    // Create a copy of xi_d and modify it
-    Eigen::VectorXd _xi_d = xi_d;
-    Eigen::VectorXd xi_u_theta = xi_u.cwiseProduct(theta_vw);
+    // Efficient modification of xi_d using sparse operations
+    Eigen::SparseVector<double> _xi_d = xi_d.sparseView();
+    Eigen::SparseVector<double> xi_u_theta =
+        (xi_u.cwiseProduct(theta_vw)).sparseView();
     for (int i = 0; i < ubi.size(); ++i) {
-        _xi_d(ubi(i)) -= xi_u_theta(i);
+        _xi_d.coeffRef(ubi(i)) -= xi_u_theta.coeff(i);
     }
 
     // Call the function to solve the augmented system
     solve_augmented_system(delta_x, delta_y, ls, xi_p, _xi_d);
 
-    // Update delta_z
-    delta_z -= xi_u;
+    // Efficient update of delta_z
     for (int i = 0; i < ubi.size(); ++i) {
-        delta_z(i) += delta_x(ubi(i));
+        delta_z.coeffRef(i) =
+            (delta_x.coeff(ubi(i)) - xi_u.coeff(i)) * theta_vw.coeff(i);
     }
-    delta_z = delta_z.cwiseProduct(theta_vw);
 }
 
 void solve_newton_system(
@@ -595,10 +571,9 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
                  const Eigen::VectorXd &lo, const Eigen::VectorXd &hi,
                  const Eigen::VectorXd &sense, const double tol) {
 
-
-    //omp_set_num_threads(32);
-    //Eigen::setNbThreads(32);
-    // Convert to standard form
+    // omp_set_num_threads(32);
+    // Eigen::setNbThreads(32);
+    //  Convert to standard form
     Eigen::SparseMatrix<double> A;
     Eigen::VectorXd b;
     Eigen::VectorXd c;
@@ -710,7 +685,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
     Eigen::ArrayXd t_xs_lower, t_xs_upper, t_vw_lower, t_vw_upper;
     Eigen::VectorXd t_xs, t_vw;
     // Delta calculations
-    double delta_0;
+    double delta_0, bl_dot_lambda, correction;
 
     // keep old lambda and x for results
     // Eigen::VectorXd x_old = x;
@@ -744,49 +719,55 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         //(1.0 +
         // ubv.norm())));
 
-        _p = std::fmax(res.rp.lpNorm<Eigen::Infinity>() / (tau * (1.0 + b.lpNorm<Eigen::Infinity>())),
-                       res.run / (tau * (1.0 + ubv.lpNorm<Eigen::Infinity>())));
-        // calculate _d = |rd| / (τ * (1 + |c|))
-        _d = res.rd.lpNorm<Eigen::Infinity>() / (tau * (1.0 + c.lpNorm<Eigen::Infinity>()));
+        bl_dot_lambda = b.dot(lambda);
 
-        _g = std::abs(c.dot(x) - b.dot(lambda)) / (tau +
-                                                   std::abs(b.dot(lambda)));
+        _p = std::fmax(res.rp.lpNorm<Eigen::Infinity>() /
+                           (tau * (1.0 + b.lpNorm<Eigen::Infinity>())),
+                       res.ru.lpNorm<Eigen::Infinity>() /
+                           (tau * (1.0 + ubv.lpNorm<Eigen::Infinity>())));
+        // calculate _d = |rd| / (τ * (1 + |c|))
+        _d = res.rd.lpNorm<Eigen::Infinity>() /
+             (tau * (1.0 + c.lpNorm<Eigen::Infinity>()));
+
+        _g = std::abs(c.dot(x) - bl_dot_lambda) /
+             (tau + std::abs(bl_dot_lambda));
 
         // calculate _g = |cᵀx - bᵀλ| / (τ * (1 + |bᵀλ|))
         //_g = std::abs(c.dot(x) - b.dot(lambda)) / (tau +
-        //std::abs(b.dot(lambda)));
+        // std::abs(b.dot(lambda)));
 
-        //std::cout << c.dot(x) << "             " << std::abs(b.dot(lambda)) << std::endl;
-        //std::cout << "mu" << mu << "    tau/kappa   " << tau / kappa << std::endl;
-        //std::cout << "p "<<  _p << "   -    " << "d " << _d << "           " << "g " << _g <<  "           " << tau << std::endl;
-        //std::cout << "objetivo: " << c.dot(x) << std::endl;
-        // std::cout << "p: " << _p << std::endl;
-        // std::cout << "d: " << _d << std::endl;
-        // std::cout << "g: " << _g << std::endl;
-        //  check optimality
+        // std::cout << c.dot(x) << "             " << std::abs(b.dot(lambda))
+        // << std::endl; std::cout << "mu" << mu << "    tau/kappa   " << tau /
+        // kappa << std::endl; std::cout << "p "<<  _p << "   -    " << "d " <<
+        // _d << "           " << "g " << _g <<  "           " << tau <<
+        // std::endl; std::cout << "objetivo: " << c.dot(x) << std::endl;
+        //  std::cout << "p: " << _p << std::endl;
+        //  std::cout << "d: " << _d << std::endl;
+        //  std::cout << "g: " << _g << std::endl;
+        //   check optimality
         if (_d < tol) {
             break;
         }
         // check infesibility
-        if ((mu < 1e-6) || (tau/kappa < 1e-6)) {
+        if ((mu < 1e-6) || (tau / kappa < 1e-6)) {
             break;
         }
 
-        // scaling factors
-        theta_vw.array() = w.array() / v.array();
-        theta_xs.array() = s.array() / x.array();
+        // Vectorized scaling factors computation
+        theta_vw = w.cwiseQuotient(v);
+        theta_xs = s.cwiseQuotient(x);
 
-        for (int i = 0; i < ubi.size(); i++) {
-            int index = ubi[i];
-            theta_xs[index] += theta_vw[i];
+        for (int i = 0; i < ubi.size(); ++i) {
+            theta_xs[ubi[i]] += theta_vw[i];
         }
 
         // update regularizations
         // Element-wise operations for regP and regD
-        regP = regP.array() / 10.0;
-        regP = regP.array().max(r_min);
-        regD = regD.array() / 10.0;
-        regD = regD.array().max(r_min);
+        regP /= 10.0;
+        regP = regP.cwiseMax(r_min);
+        regD /= 10.0;
+        regD = regD.cwiseMax(r_min);
+
         // Scalar operation for regG
         regG = std::max(r_min, regG / 10.0);
 
@@ -849,7 +830,6 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         // compute high order corrections like Tulip
         while ((ncor <= 3) && (alpha < 0.9995)) {
             // Tentative step length
-            alpha_ = alpha;
             ncor += 1;
             alpha_ = std::min(1.0, 2.0 * alpha);
 
@@ -857,13 +837,10 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
             mu_l = beta * mu * gamma;
             mu_u = gamma * mu / beta;
 
-            // check if the targets are feasible
-            Eigen::VectorXd xs = x;
-            xs.noalias() += alpha_ * Delta_x;
+            // Temporary variables for xs and vw
+            xs = x + alpha_ * Delta_x;
             xs.array() *= (s + alpha_ * Delta_s).array();
-
-            Eigen::VectorXd vw = v;
-            vw.noalias() += alpha_ * Delta_v;
+            vw = v + alpha_ * Delta_v;
             vw.array() *= (w + alpha_ * Delta_w).array();
 
             t_xs_lower = (xs.array() < mu_l).select(mu_l - xs.array(), 0);
@@ -879,6 +856,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
             taukappa =
                 (tau + alpha_ * Delta_tau) * (kappa + alpha_ * Delta_kappa);
 
+            /*
             if (taukappa < mu_l) {
                 t0 = mu_l - taukappa;
             } else if (taukappa > mu_u) {
@@ -886,12 +864,13 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
             } else {
                 t0 = 0;
             }
+            */
+            t0 = std::clamp(taukappa, mu_l, mu_u) - taukappa;
 
             // correct xs, vw and t0
-            t_xs =
-                t_xs.array() - (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
-            t_vw =
-                t_vw.array() - (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
+            correction = (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
+            t_xs.array() -= correction;
+            t_vw.array() -= correction;
             t0 = t0 - (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
 
             // create temporary Deltas to store the values of Delta_x, Delta_y,
@@ -960,7 +939,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         if (l == -infty && h == infty) {
             // For free variables, we had split them into x+ and x-.
             original_x[j] = (x[j + free_var] - x[nv_orig + free_var]) * inv_tau;
-            free_var += 1;
+            free_var++;
         } else if (std::isfinite(l) && std::isfinite(h)) {
             // For variables with both lower and upper bounds.
             original_x[j] = l + x[j] * inv_tau;
@@ -979,11 +958,11 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
     // remove SparseSolver
     // ls.~SparseSolver();
 
-    //std::cout << objetivo << std::endl;
+    // std::cout << objetivo << std::endl;
 
     // dual objective
-    //double dual_obj = b.dot(lambda);
-    //std::cout << dual_obj << std::endl;
+    // double dual_obj = b.dot(lambda);
+    // std::cout << dual_obj << std::endl;
 
     return std::make_tuple(x, lambda, s, objetivo);
 }
