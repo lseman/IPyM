@@ -48,6 +48,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsuitesparse-dev pybind11-dev
 
       - name: Configure
         run: ${{ matrix.cmake-config-env-vars }} cmake -B build -S .
