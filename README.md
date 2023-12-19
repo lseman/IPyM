@@ -19,7 +19,43 @@ The *AUGMENTED* definition changes the compilation to use an augmented matrix fo
 
 ### Installation
 
-    CMake available
+To install this project, follow these steps:
+
+    - Install CMake, which will be used to build the project.
+    - Clone the repository: git clone [repository-url].
+    - Navigate to the project directory: cd [project-directory].
+    - Create a build directory and navigate into it: mkdir build && cd build.
+    - Run CMake to configure the project: cmake ...
+    - Build the project: cmake --build ..
+
+### Usage
+
+First, ensure that the library is properly imported in your Python script:
+
+```
+import ipy_selfdual as ipy
+```
+
+Then, you can use the run_optimization function as follows:
+
+```
+# Define your problem parameters
+A = ... # Coefficient matrix
+b = ... # Right-hand side vector
+c = ... # Cost vector
+lo = ... # Lower bounds for variables
+hi = ... # Upper bounds for variables
+sense = ... # Constraint sense
+tol = ... # Tolerance
+
+# Run the optimization
+x0, lambdas, slacks, obj = ipy.run_optimization(A, b, -c, lo, hi, sense_ipm, tol)
+
+# x0: Solution vector
+# lambdas: Dual variables
+# slacks: Slack variables
+# obj: Objective
+```
 
 ### Contact
 
