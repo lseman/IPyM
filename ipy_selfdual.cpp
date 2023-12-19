@@ -4,7 +4,10 @@
  * Email: laio@ieee.org
  */
 
+
 #include "cholmod.h"
+
+#define EIGEN_USE_MKL_ALL
 
 // create define to decide between augmented and normal
 #define AUGMENTED
@@ -13,7 +16,6 @@
 #include <iostream>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
-//#define EIGEN_USE_MKL_ALL
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 // #include <Eigen/CholmodSupport>
@@ -24,17 +26,16 @@
 
 // reader libraries
 // #include <omp.h>
-#include <vector>
 
-#include <algorithm>
-#include <limits>
 #include <stdexcept>
-#include <tuple>
+//#include <tuple>
 
 // reader libraries
-#include <fstream>
-#include <sstream>
-#include <string>
+//#include <fstream>
+//#include <sstream>
+//#include <string>
+
+#include <vector>
 
 // #include <cusolverDn.h>
 // #include <cusolverRf.h>
@@ -176,8 +177,8 @@ void convert_to_standard_form(
         }
     }
 
-    int csize = cs.size();
-    int bsize = bs.size();
+    //int csize = cs.size();
+    //int bsize = bs.size();
 
     std::vector<Eigen::Triplet<double>> triplets;
 
@@ -208,7 +209,7 @@ public:
     Eigen::SparseMatrix<double> S;
     Eigen::SparseMatrix<double> AD;
     Eigen::SparseMatrix<double> D;
-    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> F;
+    //Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> F;
     bool firstFactorization = true;
 
     cholmod_common c;
@@ -217,6 +218,9 @@ public:
     SparseSolver() {
         cholmod_l_start(&c);
         c.useGPU = 0; // Use this line instead of &c->useGPU = 1;
+
+        c.nmethods = 1;
+        c.method[0].ordering = CHOLMOD_METIS;
 
 // only if define augmented = 1
 #ifdef AUGMENTED
@@ -227,7 +231,7 @@ public:
             CHOLMOD_SUPERNODAL; // Use the supernodal factorization method
 #endif
 
-        c.maxGpuMemBytes = 10000000000;
+        // c.maxGpuMemBytes = 10000000000;
         // c.method = CHOLMOD_SUPERNODAL;
 
         L = nullptr;
@@ -758,7 +762,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         // std::cout << "d: " << _d << std::endl;
         // std::cout << "g: " << _g << std::endl;
         //  check optimality
-        if (_p < tol) {
+        if (_d < tol) {
             break;
         }
         // check infesibility
@@ -973,11 +977,11 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
     // remove SparseSolver
     // ls.~SparseSolver();
 
-    std::cout << objetivo << std::endl;
+    //std::cout << objetivo << std::endl;
 
     // dual objective
-    double dual_obj = b.dot(lambda);
-    std::cout << dual_obj << std::endl;
+    //double dual_obj = b.dot(lambda);
+    //std::cout << dual_obj << std::endl;
 
     return std::make_tuple(x, lambda, s, objetivo);
 }
