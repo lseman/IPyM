@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -m64 -Wall -shared -fPIC")
 
 # Include directories
-include_directories(/usr/include/python3.11)
+include_directories(/usr/include/python3.10)
 include_directories($(python3 -m pybind11 --includes))
 include_directories(/usr/include/eigen3)
 include_directories(/usr/include/suitesparse)
