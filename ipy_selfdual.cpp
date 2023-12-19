@@ -7,7 +7,7 @@
 
 #include "cholmod.h"
 
-//#define EIGEN_USE_MKL_ALL
+#define EIGEN_USE_MKL_ALL
 
 // create define to decide between augmented and normal
 #define AUGMENTED
@@ -214,9 +214,10 @@ public:
 
     cholmod_common c;
     cholmod_factor *L;
+    cholmod_dense *X = NULL, *Y = NULL, *E = NULL ;
 
     SparseSolver() {
-        cholmod_l_start(&c);
+        cholmod_start(&c);
         c.useGPU = 0; // Use this line instead of &c->useGPU = 1;
 
         c.nmethods = 1;
@@ -240,43 +241,47 @@ public:
     ~SparseSolver() {
 
         if (L) {
-            cholmod_l_free_factor(&L, &c);
+            cholmod_free_factor(&L, &c);
         }
-        cholmod_l_finish(&c);
+        cholmod_finish(&c);
     }
 
     void factorizeMatrix(
-        const Eigen::SparseMatrix<double, Eigen::RowMajor, long> &matrix) {
+        const Eigen::SparseMatrix<double, Eigen::RowMajor, int> &matrix) {
         cholmod_sparse A = viewAsCholmod(matrix);
 
         if (firstFactorization) {
             if (L) {
-                cholmod_l_free_factor(&L, &c);
+                cholmod_free_factor(&L, &c);
             }
-            L = cholmod_l_analyze(&A, &c);
+            L = cholmod_analyze(&A, &c);
             firstFactorization = false;
         }
 
-        cholmod_l_factorize(&A, L, &c);
+        cholmod_factorize(&A, L, &c);
     }
 
     Eigen::VectorXd solve(const Eigen::VectorXd &rhs) {
         cholmod_dense b = viewAsCholmod(rhs);
-        cholmod_dense *x = cholmod_l_solve(CHOLMOD_A, L, &b, &c);
+        
+        cholmod_solve2(CHOLMOD_A, L, &b, NULL, &X, NULL, &Y, &E, &c);
+        Eigen::VectorXd result = viewAsEigen(X);
 
-        Eigen::VectorXd result = viewAsEigen(x);
-        cholmod_l_free_dense(&x, &c);
+        //cholmod_free_dense (&X, &c) ;
+        //cholmod_free_dense (&Y, &c) ;
+        //cholmod_free_dense (&E, &c) ;
+        //cholmod_free_dense(&x, &c);
         return result;
     }
 
 private:
     static cholmod_sparse viewAsCholmod(
-        const Eigen::SparseMatrix<double, Eigen::RowMajor, long> &matrix) {
+        const Eigen::SparseMatrix<double, Eigen::RowMajor, int> &matrix) {
         cholmod_sparse result;
         result.nrow = matrix.rows();
         result.ncol = matrix.cols();
-        result.p = const_cast<long *>(matrix.outerIndexPtr());
-        result.i = const_cast<long *>(matrix.innerIndexPtr());
+        result.p = const_cast<int *>(matrix.outerIndexPtr());
+        result.i = const_cast<int *>(matrix.innerIndexPtr());
 
         result.x = const_cast<double *>(matrix.valuePtr());
         result.z = nullptr;
