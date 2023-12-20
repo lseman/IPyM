@@ -1,14 +1,7 @@
 # IPyM - Interior Po'y'nt Method
 
 ### Description
-IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11. It is based on the self-dual formulation:
-
-  ```math
-  \text{max} \quad & c^T x - b^T y
-  \text{subject to} \quad & Ax + s = b, \quad A^T y + z = c,
-  x \geq 0, \quad s \geq 0, \quad y \text{ unrestricted}, \quad z \geq 0
-  ```
-
+IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11. It is based on the self-dual formulation.
 ### Dependencies
 - **Eigen**: A versatile C++ template library for linear algebra.
 - **Cholmod**: Specialized in solving sparse linear systems.
