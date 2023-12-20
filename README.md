@@ -1,8 +1,7 @@
-# IPyM
-## IPM Solver for BCP in LP
+# IPyM Interior Po'y'nt Method
 
 ### Description
-IPyM is a Python-based Interior Point Method (IPM) solver tailored for Branch-Cut-Price (BCP) in Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11.
+IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11.
 
 ### Dependencies
 - **Eigen**: A versatile C++ template library for linear algebra.
