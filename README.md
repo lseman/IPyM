@@ -3,7 +3,7 @@
 ### Description
 IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11. It is based on the self-dual formulation:
 
-  ```
+  ```math
   \text{minimize/maximize} \quad & c^T x - b^T y \\
   \text{subject to} \quad & Ax + s = b, \quad A^T y + z = c, \\
   & x \geq 0, \quad s \geq 0, \quad y \text{ unrestricted}, \quad z \geq 0
