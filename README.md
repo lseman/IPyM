@@ -41,4 +41,10 @@ x0, lambdas, slacks, obj = ipy.run_optimization(A, b, -c, lo, hi, sense_ipm, tol
 ```
 
 ### Contact
-For inquiries or collaborations, reach out to Laio Oriel Seman at laio@ieee.org.
+For inquiries or collaborations, reach out to Laio Oriel Seman at laio [at] ieee.org.
+
+### References
+
+- Tanneau, M., Anjos, M.F. & Lodi, A. Design and implementation of a modular interior-point solver for linear optimization. Math. Prog. Comp. 13, 509–551 (2021). https://doi.org/10.1007/s12532-020-00200-8
+
+- https://github.com/sinha-abhi/PDIPS.jl
