@@ -1,0 +1,94 @@
+\doxysection{Sparse\+Solver Class Reference}
+\hypertarget{classSparseSolver}{}\label{classSparseSolver}\index{SparseSolver@{SparseSolver}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classSparseSolver_a2b4be24f042fa90b4d4f41f1b732f80f}{factorize\+Matrix}} (const Eigen\+::\+Sparse\+Matrix$<$ double, Eigen\+::\+Row\+Major, int $>$ \&matrix)
+\item 
+Eigen\+::\+Vector\+Xd \mbox{\hyperlink{classSparseSolver_a4337137c45bc2ff28f7e35baa5448417}{solve}} (const Eigen\+::\+Vector\+Xd \&rhs)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classSparseSolver_a0ced5508f5ce97e7283461fb54925076}\label{classSparseSolver_a0ced5508f5ce97e7283461fb54925076} 
+int {\bfseries n}
+\item 
+\Hypertarget{classSparseSolver_ae1cfad5820b75edef371654b580f6050}\label{classSparseSolver_ae1cfad5820b75edef371654b580f6050} 
+int {\bfseries m}
+\item 
+\Hypertarget{classSparseSolver_a9395e13c1709a243822be35d892e5a04}\label{classSparseSolver_a9395e13c1709a243822be35d892e5a04} 
+Eigen\+::\+Vector\+Xd {\bfseries theta}
+\item 
+\Hypertarget{classSparseSolver_a966baa5cb12fdb5dc3ae2fe021e24069}\label{classSparseSolver_a966baa5cb12fdb5dc3ae2fe021e24069} 
+Eigen\+::\+Vector\+Xd {\bfseries regP}
+\item 
+\Hypertarget{classSparseSolver_a63e4283c6f918fe6ed49341ee5c4956e}\label{classSparseSolver_a63e4283c6f918fe6ed49341ee5c4956e} 
+Eigen\+::\+Vector\+Xd {\bfseries regD}
+\item 
+\Hypertarget{classSparseSolver_a6c0451aa464e061c0611871d3e6842da}\label{classSparseSolver_a6c0451aa464e061c0611871d3e6842da} 
+Eigen\+::\+Sparse\+Matrix$<$ double $>$ {\bfseries A}
+\item 
+\Hypertarget{classSparseSolver_a1d3220221a7ee978f99c6770eb1b4d8e}\label{classSparseSolver_a1d3220221a7ee978f99c6770eb1b4d8e} 
+Eigen\+::\+Sparse\+Matrix$<$ double $>$ {\bfseries S}
+\item 
+\Hypertarget{classSparseSolver_a6dbb6f3775b6e8fee8376915ff55e16d}\label{classSparseSolver_a6dbb6f3775b6e8fee8376915ff55e16d} 
+Eigen\+::\+Sparse\+Matrix$<$ double $>$ {\bfseries AD}
+\item 
+\Hypertarget{classSparseSolver_a89269567877ece0db949ac3fc1bb7972}\label{classSparseSolver_a89269567877ece0db949ac3fc1bb7972} 
+Eigen\+::\+Sparse\+Matrix$<$ double $>$ {\bfseries D}
+\item 
+\Hypertarget{classSparseSolver_aee15a17f454ee18d9b9628642433f15c}\label{classSparseSolver_aee15a17f454ee18d9b9628642433f15c} 
+bool {\bfseries first\+Factorization} = true
+\item 
+\Hypertarget{classSparseSolver_a29e8309ea9a1dacd2c7017ac5350041f}\label{classSparseSolver_a29e8309ea9a1dacd2c7017ac5350041f} 
+cholmod\+\_\+common {\bfseries c}
+\item 
+\Hypertarget{classSparseSolver_ab15ab5fd41dbb15db6a3f39223613f5f}\label{classSparseSolver_ab15ab5fd41dbb15db6a3f39223613f5f} 
+cholmod\+\_\+factor \texorpdfstring{$\ast$}{*} {\bfseries L}
+\item 
+\Hypertarget{classSparseSolver_acc80e4b26fd71c704ab2564a5c6eb596}\label{classSparseSolver_acc80e4b26fd71c704ab2564a5c6eb596} 
+cholmod\+\_\+dense \texorpdfstring{$\ast$}{*} {\bfseries X} = NULL
+\item 
+\Hypertarget{classSparseSolver_aa2c7bf7b5c26b7b7567fe7b75bc54425}\label{classSparseSolver_aa2c7bf7b5c26b7b7567fe7b75bc54425} 
+cholmod\+\_\+dense \texorpdfstring{$\ast$}{*} {\bfseries Y} = NULL
+\item 
+\Hypertarget{classSparseSolver_afd1c6c2a5a2f53ce16027df4f3ae7a1e}\label{classSparseSolver_afd1c6c2a5a2f53ce16027df4f3ae7a1e} 
+cholmod\+\_\+dense \texorpdfstring{$\ast$}{*} {\bfseries E} = NULL
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classSparseSolver_a2b4be24f042fa90b4d4f41f1b732f80f}\label{classSparseSolver_a2b4be24f042fa90b4d4f41f1b732f80f} 
+\index{SparseSolver@{SparseSolver}!factorizeMatrix@{factorizeMatrix}}
+\index{factorizeMatrix@{factorizeMatrix}!SparseSolver@{SparseSolver}}
+\doxysubsubsection{\texorpdfstring{factorizeMatrix()}{factorizeMatrix()}}
+{\footnotesize\ttfamily void Sparse\+Solver\+::factorize\+Matrix (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Sparse\+Matrix$<$ double, Eigen\+::\+Row\+Major, int $>$ \&}]{matrix }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Factorizes the given sparse matrix using Cholesky decomposition.
+
+
+\begin{DoxyParams}{Parameters}
+{\em matrix} & The sparse matrix to be factorized. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classSparseSolver_a4337137c45bc2ff28f7e35baa5448417}\label{classSparseSolver_a4337137c45bc2ff28f7e35baa5448417} 
+\index{SparseSolver@{SparseSolver}!solve@{solve}}
+\index{solve@{solve}!SparseSolver@{SparseSolver}}
+\doxysubsubsection{\texorpdfstring{solve()}{solve()}}
+{\footnotesize\ttfamily Eigen\+::\+Vector\+Xd Sparse\+Solver\+::solve (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Vector\+Xd \&}]{rhs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Solves a linear system of equations using the Cholesky decomposition method.
+
+
+\begin{DoxyParams}{Parameters}
+{\em rhs} & The right-\/hand side vector of the linear system. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The solution vector. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/data/\+IPy\+M/ipy\+\_\+selfdual.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,64 @@
+\chapter{IPyM -\/ Interior Po\texorpdfstring{$\ast$}{*}y\texorpdfstring{$\ast$}{*}nt Method}
+\hypertarget{md__2data_2IPyM_2README}{}\label{md__2data_2IPyM_2README}\index{IPyM -\/ Interior Po\texorpdfstring{$\ast$}{*}y\texorpdfstring{$\ast$}{*}nt Method@{IPyM -\/ Interior Po\texorpdfstring{$\ast$}{*}y\texorpdfstring{$\ast$}{*}nt Method}}
+\label{md__2data_2IPyM_2README_autotoc_md0}%
+\Hypertarget{md__2data_2IPyM_2README_autotoc_md0}%
+ \hypertarget{md__2data_2IPyM_2README_autotoc_md1}{}\doxysubsection{\texorpdfstring{Description}{Description}}\label{md__2data_2IPyM_2README_autotoc_md1}
+IPyM is a C++-\/based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-\/scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11. It is based on the self-\/dual formulation\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{min\ 0}
+\DoxyCodeLine{s.t.}
+\DoxyCodeLine{Ax\ -\/\ b\(\backslash\)tau\ =\ 0,}
+\DoxyCodeLine{-\/\ A\string^T\ y\ +\ c\(\backslash\)tau\ -\/\ x\ >=\ 0,}
+\DoxyCodeLine{b\string^T\ y\ -\/\ c\string^T\ x\ >=\ 0,}
+\DoxyCodeLine{x\ >=\ 0,}
+\DoxyCodeLine{\(\backslash\)tau\ >=\ 0,}
+\DoxyCodeLine{y\ >=\ 0.}
+
+\end{DoxyCode}
+\hypertarget{md__2data_2IPyM_2README_autotoc_md2}{}\doxysubsection{\texorpdfstring{Dependencies}{Dependencies}}\label{md__2data_2IPyM_2README_autotoc_md2}
+
+\begin{DoxyItemize}
+\item {\bfseries{Eigen}}\+: A versatile C++ template library for linear algebra.
+\item {\bfseries{Cholmod}}\+: Specialized in solving sparse linear systems.
+\item {\bfseries{pybind11}}\+: Facilitates C++ and Python interoperability.
+\end{DoxyItemize}
+
+{\itshape Ensure these dependencies are installed and configured in your environment for optimal functionality.}\hypertarget{md__2data_2IPyM_2README_autotoc_md3}{}\doxysubsection{\texorpdfstring{Solving Method}{Solving Method}}\label{md__2data_2IPyM_2README_autotoc_md3}
+Utilize the {\itshape AUGMENTED} definition to compile with an augmented matrix form.\hypertarget{md__2data_2IPyM_2README_autotoc_md4}{}\doxysubsection{\texorpdfstring{Installation}{Installation}}\label{md__2data_2IPyM_2README_autotoc_md4}
+
+\begin{DoxyEnumerate}
+\item Install CMake for building the project.
+\item Clone the repository\+: {\ttfamily git clone \mbox{[}repository-\/url\mbox{]}}.
+\item Navigate to the project directory\+: {\ttfamily cd \mbox{[}project-\/directory\mbox{]}}.
+\item Create and enter the build directory\+: {\ttfamily mkdir build \&\& cd build}.
+\item Configure with CMake\+: {\ttfamily cmake ...}.
+\item Build the project\+: {\ttfamily cmake -\/-\/build ..}.
+\end{DoxyEnumerate}\hypertarget{md__2data_2IPyM_2README_autotoc_md5}{}\doxysubsection{\texorpdfstring{Usage}{Usage}}\label{md__2data_2IPyM_2README_autotoc_md5}
+Import the library in your Python script\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{import}\ ipy\_selfdual\ \textcolor{keyword}{as}\ ipy}
+
+\end{DoxyCode}
+ Optimize using {\ttfamily run\+\_\+optimization}\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{\#\ Define\ problem\ parameters}}
+\DoxyCodeLine{A,\ b,\ c\ =\ ...\ \textcolor{comment}{\#\ Coefficient\ matrix,\ RHS\ vector,\ Cost\ vector}}
+\DoxyCodeLine{lo,\ hi\ =\ ...\ \textcolor{comment}{\#\ Variable\ bounds}}
+\DoxyCodeLine{sense,\ tol\ =\ ...\ \textcolor{comment}{\#\ Constraint\ sense,\ Tolerance}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{\#\ Execute\ optimization}}
+\DoxyCodeLine{x0,\ lambdas,\ slacks,\ obj\ =\ ipy.run\_optimization(A,\ b,\ -\/c,\ lo,\ hi,\ sense\_ipm,\ tol)}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{\#\ Outputs:\ Solution\ vector,\ Dual\ variables,\ Slack\ variables,\ Objective\ value}}
+
+\end{DoxyCode}
+\hypertarget{md__2data_2IPyM_2README_autotoc_md6}{}\doxysubsection{\texorpdfstring{Contact}{Contact}}\label{md__2data_2IPyM_2README_autotoc_md6}
+For inquiries or collaborations, reach out to Laio Oriel Seman at laio \mbox{[}at\mbox{]} ieee.\+org.\hypertarget{md__2data_2IPyM_2README_autotoc_md7}{}\doxysubsection{\texorpdfstring{References}{References}}\label{md__2data_2IPyM_2README_autotoc_md7}
+
+\begin{DoxyItemize}
+\item Andersen, E.\+D., Andersen, K.\+D. (2000). The Mosek Interior Point Optimizer for Linear Programming\+: An Implementation of the Homogeneous Algorithm. In\+: Frenk, H., Roos, K., Terlaky, T., Zhang, S. (eds) High Performance Optimization. Applied Optimization, vol 33. Springer, Boston, MA. \href{https://doi.org/10.1007/978-1-4757-3216-0_8}{\texttt{ https\+://doi.\+org/10.\+1007/978-\/1-\/4757-\/3216-\/0\+\_\+8}}
+\item Tanneau, M., Anjos, M.\+F. \& Lodi, A. Design and implementation of a modular interior-\/point solver for linear optimization. Math. Prog. Comp. 13, 509–551 (2021). \href{https://doi.org/10.1007/s12532-020-00200-8}{\texttt{ https\+://doi.\+org/10.\+1007/s12532-\/020-\/00200-\/8}}
+\item \href{https://github.com/sinha-abhi/PDIPS.jl}{\texttt{ https\+://github.\+com/sinha-\/abhi/\+PDIPS.\+jl}} 
+\end{DoxyItemize}
