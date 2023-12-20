@@ -721,8 +721,19 @@ double max_alpha(const VectorXd &x, const VectorXd &dx, const VectorXd &v,
     return alpha;
 }
 
+/**
+ * @brief Main function for the self-dual interior point method.
+ * 
+ * @param As Matrix A in sparse form
+ * @param bs rhs vector b
+ * @param cs cost vector c
+ * @param lo lower bound vector
+ * @param hi upper bound vector
+ * @param sense constraint sense vector
+ * @param tol tolerance
+ * @return std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd, double> 
+ */
 std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd, double>
-
 run_optimization(const Eigen::SparseMatrix<double> &As,
                  const Eigen::VectorXd &bs, const Eigen::VectorXd &cs,
                  const Eigen::VectorXd &lo, const Eigen::VectorXd &hi,
@@ -1098,6 +1109,14 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
     return std::make_tuple(x, lambda, s, objetivo);
 }
 
+/**
+ * @brief Binds the module to Python using Pybind11.
+ *
+ * This function is used to bind the module to Python using Pybind11. It takes
+ * the module name and a function pointer to the module definition function.
+ *
+ * @param m The module object representing the module being bound.
+ */
 PYBIND11_MODULE(ipy_selfdual, m) {
     m.def("run_optimization", &run_optimization,
           "A function to run the optimization");
