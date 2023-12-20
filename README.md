@@ -1,7 +1,15 @@
-# IPyM Interior Po'y'nt Method
+# IPyM - Interior Po'y'nt Method
 
 ### Description
-IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11.
+IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11. It is based on the self-dual formulation:
+
+  \[ 
+  \begin{align*}
+  \text{minimize/maximize} \quad & c^T x - b^T y \\
+  \text{subject to} \quad & Ax + s = b, \quad A^T y + z = c, \\
+  & x \geq 0, \quad s \geq 0, \quad y \text{ unrestricted}, \quad z \geq 0
+  \end{align*}
+  \]
 
 ### Dependencies
 - **Eigen**: A versatile C++ template library for linear algebra.
@@ -43,6 +51,8 @@ x0, lambdas, slacks, obj = ipy.run_optimization(A, b, -c, lo, hi, sense_ipm, tol
 For inquiries or collaborations, reach out to Laio Oriel Seman at laio [at] ieee.org.
 
 ### References
+
+- Andersen, E.D., Andersen, K.D. (2000). The Mosek Interior Point Optimizer for Linear Programming: An Implementation of the Homogeneous Algorithm. In: Frenk, H., Roos, K., Terlaky, T., Zhang, S. (eds) High Performance Optimization. Applied Optimization, vol 33. Springer, Boston, MA. https://doi.org/10.1007/978-1-4757-3216-0_8
 
 - Tanneau, M., Anjos, M.F. & Lodi, A. Design and implementation of a modular interior-point solver for linear optimization. Math. Prog. Comp. 13, 509–551 (2021). https://doi.org/10.1007/s12532-020-00200-8
 
