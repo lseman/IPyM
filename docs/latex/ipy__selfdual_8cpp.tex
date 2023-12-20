@@ -1,0 +1,392 @@
+\doxysection{/data/\+IPy\+M/ipy\+\_\+selfdual.cpp File Reference}
+\hypertarget{ipy__selfdual_8cpp}{}\label{ipy__selfdual_8cpp}\index{/data/IPyM/ipy\_selfdual.cpp@{/data/IPyM/ipy\_selfdual.cpp}}
+{\ttfamily \#include "{}cholmod.\+h"{}}\newline
+{\ttfamily \#include $<$Eigen/\+Dense$>$}\newline
+{\ttfamily \#include $<$Eigen/\+Sparse$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$pybind11/eigen.\+h$>$}\newline
+{\ttfamily \#include $<$pybind11/pybind11.\+h$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$limits$>$}\newline
+{\ttfamily \#include $<$omp.\+h$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include $<$tuple$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}}
+\item 
+struct \mbox{\hyperlink{structResiduals}{Residuals}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{ipy__selfdual_8cpp_a0a8c75d0c117eeadd32a2de8acb8cd91}{AUGMENTED}}
+\item 
+\#define \mbox{\hyperlink{ipy__selfdual_8cpp_add32a3101843e4b782d8f5d2d92b97ab}{EIGEN\+\_\+\+INITIALIZE\+\_\+\+MATRICES\+\_\+\+BY\+\_\+\+ZERO}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+Eigen\+::\+Sparse\+Matrix$<$ double $>$ \mbox{\hyperlink{ipy__selfdual_8cpp_a4e4074946ceb4f59adf39162fd787c56}{convert\+To\+Sparse\+Diagonal}} (const Eigen\+::\+Vector\+Xd \&vec)
+\begin{DoxyCompactList}\small\item\em Converts a dense vector to a sparse diagonal matrix. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_acad010b46de4803a186d1b5f41044d9d}{convert\+\_\+to\+\_\+standard\+\_\+form}} (const Eigen\+::\+Sparse\+Matrix$<$ double $>$ \&A, const Eigen\+::\+Vector\+Xd \&b, const Eigen\+::\+Vector\+Xd \&c, const Eigen\+::\+Vector\+Xd \&lb, const Eigen\+::\+Vector\+Xd \&ub, const Eigen\+::\+Vector\+Xd \&sense, Eigen\+::\+Sparse\+Matrix$<$ double $>$ \&As, Eigen\+::\+Vector\+Xd \&bs, Eigen\+::\+Vector\+Xd \&cs)
+\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_ab8ecf03764ab1034b31ef16bcf6f3644}{start\+\_\+linear\+\_\+solver}} (\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&ls, const Eigen\+::\+Sparse\+Matrix$<$ double $>$ A)
+\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_a73630a38bda1212a8dc364e95eb18b69}{update\+\_\+linear\+\_\+solver}} (\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&ls, const Eigen\+::\+Vector\+Xd \&theta, const Eigen\+::\+Vector\+Xd \&regP, const Eigen\+::\+Vector\+Xd \&regD)
+\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_aefa40e3b99ae588e2e69a9f67a3a0b84}{update\+\_\+residuals}} (\mbox{\hyperlink{structResiduals}{Residuals}} \&res, const Vector\+Xd \&x, const Vector\+Xd \&lambda, const Vector\+Xd \&s, const Vector\+Xd \&v, const Vector\+Xd \&w, const Sparse\+Matrix$<$ double $>$ \&A, const Vector\+Xd \&b, const Vector\+Xd \&c, const Vector\+Xd \&ubv, const Vector\+Xi \&ubi, const Vector\+Xd \&vbv, const Vector\+Xi \&vbi, double tau, double kappa)
+\begin{DoxyCompactList}\small\item\em Updates the residuals of a self-\/dual interior point method. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_ad7a00162e10eb573b55869004b74a22b}{solve\+\_\+augmented\+\_\+system}} (Eigen\+::\+Vector\+Xd \&dx, Eigen\+::\+Vector\+Xd \&dy, \mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&ls, const Eigen\+::\+Vector\+Xd \&xi\+\_\+p, const Eigen\+::\+Vector\+Xd \&xi\+\_\+d)
+\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_aefeb5ecd21315d9a49d90df9e882fb0d}{solve\+\_\+augsys}} (Eigen\+::\+Vector\+Xd \&delta\+\_\+x, Eigen\+::\+Vector\+Xd \&delta\+\_\+y, Eigen\+::\+Vector\+Xd \&delta\+\_\+z, \mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&ls, const Eigen\+::\+Vector\+Xd \&theta\+\_\+vw, const Eigen\+::\+Vector\+Xi \&ubi, const Eigen\+::\+Vector\+Xd \&xi\+\_\+p, const Eigen\+::\+Vector\+Xd \&xi\+\_\+d, const Eigen\+::\+Vector\+Xd \&xi\+\_\+u)
+\item 
+void \mbox{\hyperlink{ipy__selfdual_8cpp_aec533e7c5022883fd86c0aee9423ee32}{solve\+\_\+newton\+\_\+system}} (Vector\+Xd \&Delta\+\_\+x, Vector\+Xd \&Delta\+\_\+lambda, Vector\+Xd \&Delta\+\_\+w, Vector\+Xd \&Delta\+\_\+s, Vector\+Xd \&Delta\+\_\+v, double \&Delta\+\_\+tau, double \&Delta\+\_\+kappa, \mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&ls, const Vector\+Xd \&theta\+\_\+vw, const Vector\+Xd \&b, const Vector\+Xd \&c, const Vector\+Xi \&ubi, const Vector\+Xd \&ubv, const Vector\+Xd \&delta\+\_\+x, const Vector\+Xd \&delta\+\_\+y, const Vector\+Xd \&delta\+\_\+w, double delta\+\_\+0, const Vector\+Xd \&iter\+\_\+x, const Vector\+Xd \&iter\+\_\+lambda, const Vector\+Xd \&iter\+\_\+w, const Vector\+Xd \&iter\+\_\+s, const Vector\+Xd \&iter\+\_\+v, double iter\+\_\+tau, double iter\+\_\+kappa, const Vector\+Xd \&xi\+\_\+p, const Vector\+Xd \&xi\+\_\+u, const Vector\+Xd \&xi\+\_\+d, double xi\+\_\+g, const Vector\+Xd \&xi\+\_\+xs, const Vector\+Xd \&xi\+\_\+vw, double xi\+\_\+tau\+\_\+kappa)
+\item 
+double \mbox{\hyperlink{ipy__selfdual_8cpp_ad78b26012a5a3c62acf91ef5fea89954}{max\+\_\+alpha\+\_\+single}} (const Vector\+Xd \&v, const Vector\+Xd \&dv)
+\item 
+double \mbox{\hyperlink{ipy__selfdual_8cpp_a0110cf4e3f1667efb6fd0ad83b91e7ee}{max\+\_\+alpha}} (const Vector\+Xd \&x, const Vector\+Xd \&dx, const Vector\+Xd \&v, const Vector\+Xd \&dv, const Vector\+Xd \&s, const Vector\+Xd \&ds, const Vector\+Xd \&w, const Vector\+Xd \&dw, double tau, double dtau, double kappa, double dkappa)
+\item 
+std\+::tuple$<$ Eigen\+::\+Vector\+Xd, Eigen\+::\+Vector\+Xd, Eigen\+::\+Vector\+Xd, double $>$ \mbox{\hyperlink{ipy__selfdual_8cpp_a0b8b6776913bf3083b8ea8c65b2563a3}{run\+\_\+optimization}} (const Eigen\+::\+Sparse\+Matrix$<$ double $>$ \&As, const Eigen\+::\+Vector\+Xd \&bs, const Eigen\+::\+Vector\+Xd \&cs, const Eigen\+::\+Vector\+Xd \&lo, const Eigen\+::\+Vector\+Xd \&hi, const Eigen\+::\+Vector\+Xd \&sense, const double tol)
+\item 
+\mbox{\hyperlink{ipy__selfdual_8cpp_ae9401f943139973aa3fee1e463fdbfcd}{PYBIND11\+\_\+\+MODULE}} (ipy\+\_\+selfdual, m)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{ipy__selfdual_8cpp_a0a8c75d0c117eeadd32a2de8acb8cd91}\label{ipy__selfdual_8cpp_a0a8c75d0c117eeadd32a2de8acb8cd91} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!AUGMENTED@{AUGMENTED}}
+\index{AUGMENTED@{AUGMENTED}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{AUGMENTED}{AUGMENTED}}
+{\footnotesize\ttfamily \#define AUGMENTED}
+
+\Hypertarget{ipy__selfdual_8cpp_add32a3101843e4b782d8f5d2d92b97ab}\label{ipy__selfdual_8cpp_add32a3101843e4b782d8f5d2d92b97ab} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!EIGEN\_INITIALIZE\_MATRICES\_BY\_ZERO@{EIGEN\_INITIALIZE\_MATRICES\_BY\_ZERO}}
+\index{EIGEN\_INITIALIZE\_MATRICES\_BY\_ZERO@{EIGEN\_INITIALIZE\_MATRICES\_BY\_ZERO}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{EIGEN\_INITIALIZE\_MATRICES\_BY\_ZERO}{EIGEN\_INITIALIZE\_MATRICES\_BY\_ZERO}}
+{\footnotesize\ttfamily \#define EIGEN\+\_\+\+INITIALIZE\+\_\+\+MATRICES\+\_\+\+BY\+\_\+\+ZERO}
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{ipy__selfdual_8cpp_acad010b46de4803a186d1b5f41044d9d}\label{ipy__selfdual_8cpp_acad010b46de4803a186d1b5f41044d9d} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!convert\_to\_standard\_form@{convert\_to\_standard\_form}}
+\index{convert\_to\_standard\_form@{convert\_to\_standard\_form}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{convert\_to\_standard\_form()}{convert\_to\_standard\_form()}}
+{\footnotesize\ttfamily void convert\+\_\+to\+\_\+standard\+\_\+form (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Sparse\+Matrix$<$ double $>$ \&}]{A,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{b,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{c,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{lb,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{ub,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{sense,  }\item[{Eigen\+::\+Sparse\+Matrix$<$ double $>$ \&}]{As,  }\item[{Eigen\+::\+Vector\+Xd \&}]{bs,  }\item[{Eigen\+::\+Vector\+Xd \&}]{cs }\end{DoxyParamCaption})}
+
+Converts the given linear programming problem to standard form.
+
+
+\begin{DoxyParams}{Parameters}
+{\em A} & The coefficient matrix of the linear constraints. \\
+\hline
+{\em b} & The right-\/hand side vector of the linear constraints. \\
+\hline
+{\em c} & The objective function coefficients. \\
+\hline
+{\em lb} & The lower bounds on the variables. \\
+\hline
+{\em ub} & The upper bounds on the variables. \\
+\hline
+{\em sense} & The sense of the linear constraints (1 for \texorpdfstring{$<$}{<}=, -\/1 for \texorpdfstring{$>$}{>}=, 0 for =). \\
+\hline
+{\em As} & The output sparse coefficient matrix in standard form. \\
+\hline
+{\em bs} & The output right-\/hand side vector in standard form. \\
+\hline
+{\em cs} & The output objective function coefficients in standard form. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ipy__selfdual_8cpp_a4e4074946ceb4f59adf39162fd787c56}\label{ipy__selfdual_8cpp_a4e4074946ceb4f59adf39162fd787c56} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!convertToSparseDiagonal@{convertToSparseDiagonal}}
+\index{convertToSparseDiagonal@{convertToSparseDiagonal}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{convertToSparseDiagonal()}{convertToSparseDiagonal()}}
+{\footnotesize\ttfamily Eigen\+::\+Sparse\+Matrix$<$ double $>$ convert\+To\+Sparse\+Diagonal (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Vector\+Xd \&}]{vec }\end{DoxyParamCaption})}
+
+
+
+Converts a dense vector to a sparse diagonal matrix. 
+
+This function takes a dense vector and converts it into a sparse diagonal matrix. The resulting sparse matrix has non-\/zero values only on its diagonal, where the values are taken from the input vector.
+
+
+\begin{DoxyParams}{Parameters}
+{\em vec} & The input dense vector. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The resulting sparse diagonal matrix. 
+\end{DoxyReturn}
+\Hypertarget{ipy__selfdual_8cpp_a0110cf4e3f1667efb6fd0ad83b91e7ee}\label{ipy__selfdual_8cpp_a0110cf4e3f1667efb6fd0ad83b91e7ee} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!max\_alpha@{max\_alpha}}
+\index{max\_alpha@{max\_alpha}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{max\_alpha()}{max\_alpha()}}
+{\footnotesize\ttfamily double max\+\_\+alpha (\begin{DoxyParamCaption}\item[{const Vector\+Xd \&}]{x,  }\item[{const Vector\+Xd \&}]{dx,  }\item[{const Vector\+Xd \&}]{v,  }\item[{const Vector\+Xd \&}]{dv,  }\item[{const Vector\+Xd \&}]{s,  }\item[{const Vector\+Xd \&}]{ds,  }\item[{const Vector\+Xd \&}]{w,  }\item[{const Vector\+Xd \&}]{dw,  }\item[{double}]{tau,  }\item[{double}]{dtau,  }\item[{double}]{kappa,  }\item[{double}]{dkappa }\end{DoxyParamCaption})}
+
+Calculates the maximum alpha value for a given set of parameters.
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & The input vector x. \\
+\hline
+{\em dx} & The input vector dx. \\
+\hline
+{\em v} & The input vector v. \\
+\hline
+{\em dv} & The input vector dv. \\
+\hline
+{\em s} & The input vector s. \\
+\hline
+{\em ds} & The input vector ds. \\
+\hline
+{\em w} & The input vector w. \\
+\hline
+{\em dw} & The input vector dw. \\
+\hline
+{\em tau} & The value of tau. \\
+\hline
+{\em dtau} & The value of dtau. \\
+\hline
+{\em kappa} & The value of kappa. \\
+\hline
+{\em dkappa} & The value of dkappa. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The maximum alpha value. 
+\end{DoxyReturn}
+\Hypertarget{ipy__selfdual_8cpp_ad78b26012a5a3c62acf91ef5fea89954}\label{ipy__selfdual_8cpp_ad78b26012a5a3c62acf91ef5fea89954} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!max\_alpha\_single@{max\_alpha\_single}}
+\index{max\_alpha\_single@{max\_alpha\_single}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{max\_alpha\_single()}{max\_alpha\_single()}}
+{\footnotesize\ttfamily double max\+\_\+alpha\+\_\+single (\begin{DoxyParamCaption}\item[{const Vector\+Xd \&}]{v,  }\item[{const Vector\+Xd \&}]{dv }\end{DoxyParamCaption})}
+
+Calculates the maximum value of alpha based on the given vectors v and dv.
+
+
+\begin{DoxyParams}{Parameters}
+{\em v} & The input vector. \\
+\hline
+{\em dv} & The derivative vector. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The maximum value of alpha. 
+\end{DoxyReturn}
+\Hypertarget{ipy__selfdual_8cpp_ae9401f943139973aa3fee1e463fdbfcd}\label{ipy__selfdual_8cpp_ae9401f943139973aa3fee1e463fdbfcd} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!PYBIND11\_MODULE@{PYBIND11\_MODULE}}
+\index{PYBIND11\_MODULE@{PYBIND11\_MODULE}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{PYBIND11\_MODULE()}{PYBIND11\_MODULE()}}
+{\footnotesize\ttfamily PYBIND11\+\_\+\+MODULE (\begin{DoxyParamCaption}\item[{ipy\+\_\+selfdual}]{,  }\item[{m}]{ }\end{DoxyParamCaption})}
+
+\Hypertarget{ipy__selfdual_8cpp_a0b8b6776913bf3083b8ea8c65b2563a3}\label{ipy__selfdual_8cpp_a0b8b6776913bf3083b8ea8c65b2563a3} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!run\_optimization@{run\_optimization}}
+\index{run\_optimization@{run\_optimization}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{run\_optimization()}{run\_optimization()}}
+{\footnotesize\ttfamily std\+::tuple$<$ Eigen\+::\+Vector\+Xd, Eigen\+::\+Vector\+Xd, Eigen\+::\+Vector\+Xd, double $>$ run\+\_\+optimization (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Sparse\+Matrix$<$ double $>$ \&}]{As,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{bs,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{cs,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{lo,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{hi,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{sense,  }\item[{const double}]{tol }\end{DoxyParamCaption})}
+
+\Hypertarget{ipy__selfdual_8cpp_ad7a00162e10eb573b55869004b74a22b}\label{ipy__selfdual_8cpp_ad7a00162e10eb573b55869004b74a22b} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!solve\_augmented\_system@{solve\_augmented\_system}}
+\index{solve\_augmented\_system@{solve\_augmented\_system}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{solve\_augmented\_system()}{solve\_augmented\_system()}}
+{\footnotesize\ttfamily void solve\+\_\+augmented\+\_\+system (\begin{DoxyParamCaption}\item[{Eigen\+::\+Vector\+Xd \&}]{dx,  }\item[{Eigen\+::\+Vector\+Xd \&}]{dy,  }\item[{\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&}]{ls,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{xi\+\_\+p,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{xi\+\_\+d }\end{DoxyParamCaption})}
+
+Solves the augmented system of equations to obtain the solution vectors dx and dy. The augmented system is solved using a \doxylink{classSparseSolver}{Sparse\+Solver} object.
+
+
+\begin{DoxyParams}{Parameters}
+{\em dx} & The solution vector for dx. \\
+\hline
+{\em dy} & The solution vector for dy. \\
+\hline
+{\em ls} & The \doxylink{classSparseSolver}{Sparse\+Solver} object used to solve the system. \\
+\hline
+{\em xi\+\_\+p} & The vector xi\+\_\+p. \\
+\hline
+{\em xi\+\_\+d} & The vector xi\+\_\+d. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ipy__selfdual_8cpp_aefeb5ecd21315d9a49d90df9e882fb0d}\label{ipy__selfdual_8cpp_aefeb5ecd21315d9a49d90df9e882fb0d} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!solve\_augsys@{solve\_augsys}}
+\index{solve\_augsys@{solve\_augsys}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{solve\_augsys()}{solve\_augsys()}}
+{\footnotesize\ttfamily void solve\+\_\+augsys (\begin{DoxyParamCaption}\item[{Eigen\+::\+Vector\+Xd \&}]{delta\+\_\+x,  }\item[{Eigen\+::\+Vector\+Xd \&}]{delta\+\_\+y,  }\item[{Eigen\+::\+Vector\+Xd \&}]{delta\+\_\+z,  }\item[{\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&}]{ls,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{theta\+\_\+vw,  }\item[{const Eigen\+::\+Vector\+Xi \&}]{ubi,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{xi\+\_\+p,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{xi\+\_\+d,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{xi\+\_\+u }\end{DoxyParamCaption})}
+
+Solves the augmented system of equations to compute the values of delta\+\_\+x, delta\+\_\+y, and delta\+\_\+z.
+
+
+\begin{DoxyParams}{Parameters}
+{\em delta\+\_\+x} & The vector to store the computed values of delta\+\_\+x. \\
+\hline
+{\em delta\+\_\+y} & The vector to store the computed values of delta\+\_\+y. \\
+\hline
+{\em delta\+\_\+z} & The vector to store the computed values of delta\+\_\+z. \\
+\hline
+{\em ls} & The \doxylink{classSparseSolver}{Sparse\+Solver} object used to solve the augmented system. \\
+\hline
+{\em theta\+\_\+vw} & The vector containing the values of theta\+\_\+vw. \\
+\hline
+{\em ubi} & The vector containing the indices of ubi. \\
+\hline
+{\em xi\+\_\+p} & The vector containing the values of xi\+\_\+p. \\
+\hline
+{\em xi\+\_\+d} & The vector containing the values of xi\+\_\+d. \\
+\hline
+{\em xi\+\_\+u} & The vector containing the values of xi\+\_\+u. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ipy__selfdual_8cpp_aec533e7c5022883fd86c0aee9423ee32}\label{ipy__selfdual_8cpp_aec533e7c5022883fd86c0aee9423ee32} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!solve\_newton\_system@{solve\_newton\_system}}
+\index{solve\_newton\_system@{solve\_newton\_system}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{solve\_newton\_system()}{solve\_newton\_system()}}
+{\footnotesize\ttfamily void solve\+\_\+newton\+\_\+system (\begin{DoxyParamCaption}\item[{Vector\+Xd \&}]{Delta\+\_\+x,  }\item[{Vector\+Xd \&}]{Delta\+\_\+lambda,  }\item[{Vector\+Xd \&}]{Delta\+\_\+w,  }\item[{Vector\+Xd \&}]{Delta\+\_\+s,  }\item[{Vector\+Xd \&}]{Delta\+\_\+v,  }\item[{double \&}]{Delta\+\_\+tau,  }\item[{double \&}]{Delta\+\_\+kappa,  }\item[{\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&}]{ls,  }\item[{const Vector\+Xd \&}]{theta\+\_\+vw,  }\item[{const Vector\+Xd \&}]{b,  }\item[{const Vector\+Xd \&}]{c,  }\item[{const Vector\+Xi \&}]{ubi,  }\item[{const Vector\+Xd \&}]{ubv,  }\item[{const Vector\+Xd \&}]{delta\+\_\+x,  }\item[{const Vector\+Xd \&}]{delta\+\_\+y,  }\item[{const Vector\+Xd \&}]{delta\+\_\+w,  }\item[{double}]{delta\+\_\+0,  }\item[{const Vector\+Xd \&}]{iter\+\_\+x,  }\item[{const Vector\+Xd \&}]{iter\+\_\+lambda,  }\item[{const Vector\+Xd \&}]{iter\+\_\+w,  }\item[{const Vector\+Xd \&}]{iter\+\_\+s,  }\item[{const Vector\+Xd \&}]{iter\+\_\+v,  }\item[{double}]{iter\+\_\+tau,  }\item[{double}]{iter\+\_\+kappa,  }\item[{const Vector\+Xd \&}]{xi\+\_\+p,  }\item[{const Vector\+Xd \&}]{xi\+\_\+u,  }\item[{const Vector\+Xd \&}]{xi\+\_\+d,  }\item[{double}]{xi\+\_\+g,  }\item[{const Vector\+Xd \&}]{xi\+\_\+xs,  }\item[{const Vector\+Xd \&}]{xi\+\_\+vw,  }\item[{double}]{xi\+\_\+tau\+\_\+kappa }\end{DoxyParamCaption})}
+
+Solves the Newton system of equations to update the variables Delta\+\_\+x, Delta\+\_\+lambda, Delta\+\_\+w, Delta\+\_\+s, Delta\+\_\+v, Delta\+\_\+tau, and Delta\+\_\+kappa.
+
+
+\begin{DoxyParams}{Parameters}
+{\em Delta\+\_\+x} & The update for the variable x. \\
+\hline
+{\em Delta\+\_\+lambda} & The update for the variable lambda. \\
+\hline
+{\em Delta\+\_\+w} & The update for the variable w. \\
+\hline
+{\em Delta\+\_\+s} & The update for the variable s. \\
+\hline
+{\em Delta\+\_\+v} & The update for the variable v. \\
+\hline
+{\em Delta\+\_\+tau} & The update for the variable tau. \\
+\hline
+{\em Delta\+\_\+kappa} & The update for the variable kappa. \\
+\hline
+{\em ls} & The sparse solver used to solve the augmented system. \\
+\hline
+{\em theta\+\_\+vw} & The vector theta\+\_\+vw. \\
+\hline
+{\em b} & The vector b. \\
+\hline
+{\em c} & The vector c. \\
+\hline
+{\em ubi} & The vector ubi. \\
+\hline
+{\em ubv} & The vector ubv. \\
+\hline
+{\em delta\+\_\+x} & The vector delta\+\_\+x. \\
+\hline
+{\em delta\+\_\+y} & The vector delta\+\_\+y. \\
+\hline
+{\em delta\+\_\+w} & The vector delta\+\_\+w. \\
+\hline
+{\em delta\+\_\+0} & The value delta\+\_\+0. \\
+\hline
+{\em iter\+\_\+x} & The vector iter\+\_\+x. \\
+\hline
+{\em iter\+\_\+lambda} & The vector iter\+\_\+lambda. \\
+\hline
+{\em iter\+\_\+w} & The vector iter\+\_\+w. \\
+\hline
+{\em iter\+\_\+s} & The vector iter\+\_\+s. \\
+\hline
+{\em iter\+\_\+v} & The vector iter\+\_\+v. \\
+\hline
+{\em iter\+\_\+tau} & The value iter\+\_\+tau. \\
+\hline
+{\em iter\+\_\+kappa} & The value iter\+\_\+kappa. \\
+\hline
+{\em xi\+\_\+p} & The vector xi\+\_\+p. \\
+\hline
+{\em xi\+\_\+u} & The vector xi\+\_\+u. \\
+\hline
+{\em xi\+\_\+d} & The vector xi\+\_\+d. \\
+\hline
+{\em xi\+\_\+g} & The value xi\+\_\+g. \\
+\hline
+{\em xi\+\_\+xs} & The vector xi\+\_\+xs. \\
+\hline
+{\em xi\+\_\+vw} & The vector xi\+\_\+vw. \\
+\hline
+{\em xi\+\_\+tau\+\_\+kappa} & The value xi\+\_\+tau\+\_\+kappa. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ipy__selfdual_8cpp_ab8ecf03764ab1034b31ef16bcf6f3644}\label{ipy__selfdual_8cpp_ab8ecf03764ab1034b31ef16bcf6f3644} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!start\_linear\_solver@{start\_linear\_solver}}
+\index{start\_linear\_solver@{start\_linear\_solver}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{start\_linear\_solver()}{start\_linear\_solver()}}
+{\footnotesize\ttfamily void start\+\_\+linear\+\_\+solver (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&}]{ls,  }\item[{const Eigen\+::\+Sparse\+Matrix$<$ double $>$}]{A }\end{DoxyParamCaption})}
+
+Starts the linear solver by initializing the necessary data structures and performing factorization.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ls} & The \doxylink{classSparseSolver}{Sparse\+Solver} object to be used for solving the linear system. \\
+\hline
+{\em A} & The sparse matrix representing the system of linear equations. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ipy__selfdual_8cpp_a73630a38bda1212a8dc364e95eb18b69}\label{ipy__selfdual_8cpp_a73630a38bda1212a8dc364e95eb18b69} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!update\_linear\_solver@{update\_linear\_solver}}
+\index{update\_linear\_solver@{update\_linear\_solver}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{update\_linear\_solver()}{update\_linear\_solver()}}
+{\footnotesize\ttfamily void update\+\_\+linear\+\_\+solver (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSparseSolver}{Sparse\+Solver}} \&}]{ls,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{theta,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{regP,  }\item[{const Eigen\+::\+Vector\+Xd \&}]{regD }\end{DoxyParamCaption})}
+
+Updates the linear solver with new values for theta, regP, and regD. If the AUGMENTED flag is defined, it efficiently updates the diagonal elements of the matrix S and refactors it. If the AUGMENTED flag is not defined, it constructs the left-\/hand side (lhs) matrix for the normal equations using the given values of theta, regP, and regD, and factorizes it.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ls} & The \doxylink{classSparseSolver}{Sparse\+Solver} object representing the linear solver. \\
+\hline
+{\em theta} & The vector of theta values. \\
+\hline
+{\em regP} & The vector of regP values. \\
+\hline
+{\em regD} & The vector of regD values. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{ipy__selfdual_8cpp_aefa40e3b99ae588e2e69a9f67a3a0b84}\label{ipy__selfdual_8cpp_aefa40e3b99ae588e2e69a9f67a3a0b84} 
+\index{ipy\_selfdual.cpp@{ipy\_selfdual.cpp}!update\_residuals@{update\_residuals}}
+\index{update\_residuals@{update\_residuals}!ipy\_selfdual.cpp@{ipy\_selfdual.cpp}}
+\doxysubsubsection{\texorpdfstring{update\_residuals()}{update\_residuals()}}
+{\footnotesize\ttfamily void update\+\_\+residuals (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structResiduals}{Residuals}} \&}]{res,  }\item[{const Vector\+Xd \&}]{x,  }\item[{const Vector\+Xd \&}]{lambda,  }\item[{const Vector\+Xd \&}]{s,  }\item[{const Vector\+Xd \&}]{v,  }\item[{const Vector\+Xd \&}]{w,  }\item[{const Sparse\+Matrix$<$ double $>$ \&}]{A,  }\item[{const Vector\+Xd \&}]{b,  }\item[{const Vector\+Xd \&}]{c,  }\item[{const Vector\+Xd \&}]{ubv,  }\item[{const Vector\+Xi \&}]{ubi,  }\item[{const Vector\+Xd \&}]{vbv,  }\item[{const Vector\+Xi \&}]{vbi,  }\item[{double}]{tau,  }\item[{double}]{kappa }\end{DoxyParamCaption})}
+
+
+
+Updates the residuals of a self-\/dual interior point method. 
+
+This function calculates and updates the primal, upper bound, dual, and gap residuals based on the given variables and parameters.
+
+
+\begin{DoxyParams}{Parameters}
+{\em res} & The \doxylink{structResiduals}{Residuals} object to store the updated residuals. \\
+\hline
+{\em x} & The primal variable vector. \\
+\hline
+{\em lambda} & The dual variable vector. \\
+\hline
+{\em s} & The slack variable vector. \\
+\hline
+{\em v} & The upper bound variable vector. \\
+\hline
+{\em w} & The dual slack variable vector. \\
+\hline
+{\em A} & The sparse matrix representing the linear constraints. \\
+\hline
+{\em b} & The right-\/hand side vector of the linear constraints. \\
+\hline
+{\em c} & The cost vector. \\
+\hline
+{\em ubv} & The upper bound vector for the primal variables. \\
+\hline
+{\em ubi} & The indices of the primal variables with upper bounds. \\
+\hline
+{\em vbv} & The upper bound vector for the dual variables. \\
+\hline
+{\em vbi} & The indices of the dual variables with upper bounds. \\
+\hline
+{\em tau} & The scaling factor for the primal and upper bound residuals. \\
+\hline
+{\em kappa} & The constant term in the gap residual. \\
+\hline
+\end{DoxyParams}

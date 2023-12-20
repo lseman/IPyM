@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['factorizematrix_0',['factorizeMatrix',['../classSparseSolver.html#a2b4be24f042fa90b4d4f41f1b732f80f',1,'SparseSolver']]]
+  ['d_0',['D',['../classSparseSolver.html#a89269567877ece0db949ac3fc1bb7972',1,'SparseSolver']]],
+  ['dependencies_1',['Dependencies',['../md__2data_2IPyM_2README.html#autotoc_md2',1,'']]],
+  ['description_2',['Description',['../md__2data_2IPyM_2README.html#autotoc_md1',1,'']]]
 ];

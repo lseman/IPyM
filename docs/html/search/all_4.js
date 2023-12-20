@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['method_0',['method',['../md__2data_2IPyM_2README.html',1,'IPyM - Interior Po*y*nt Method'],['../md__2data_2IPyM_2README.html#autotoc_md3',1,'Solving Method']]]
+  ['factorizematrix_0',['factorizeMatrix',['../classSparseSolver.html#a2b4be24f042fa90b4d4f41f1b732f80f',1,'SparseSolver']]],
+  ['firstfactorization_1',['firstFactorization',['../classSparseSolver.html#aee15a17f454ee18d9b9628642433f15c',1,'SparseSolver']]]
 ];

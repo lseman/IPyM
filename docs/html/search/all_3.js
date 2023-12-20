@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['installation_0',['Installation',['../md__2data_2IPyM_2README.html#autotoc_md4',1,'']]],
-  ['interior_20po_20y_20nt_20method_1',['IPyM - Interior Po*y*nt Method',['../md__2data_2IPyM_2README.html',1,'']]],
-  ['ipym_20interior_20po_20y_20nt_20method_2',['IPyM - Interior Po*y*nt Method',['../md__2data_2IPyM_2README.html',1,'']]]
+  ['e_0',['E',['../classSparseSolver.html#afd1c6c2a5a2f53ce16027df4f3ae7a1e',1,'SparseSolver']]],
+  ['eigen_5finitialize_5fmatrices_5fby_5fzero_1',['EIGEN_INITIALIZE_MATRICES_BY_ZERO',['../ipy__selfdual_8cpp.html#add32a3101843e4b782d8f5d2d92b97ab',1,'ipy_selfdual.cpp']]]
 ];
