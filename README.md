@@ -1,4 +1,4 @@
-# IPyM - Interior Po'y'nt Method
+# IPyM - Interior Po*y*nt Method
 
 ### Description
 IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Linear Programming (LP). It efficiently tackles large-scale LP problems using advanced numerical techniques and integrates seamlessly with Python through pybind11. It is based on the self-dual formulation.
