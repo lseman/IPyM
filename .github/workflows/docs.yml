@@ -21,8 +21,32 @@ jobs:
         with:
           doxyfile-path: 'docs/Doxyfile'
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload Documentation Artifact
+        uses: actions/upload-artifact@v3
         with:
           name: documentation
           path: build/docs
-            
+
+  deploy:
+    needs: doxygen
+    name: "GH Pages Deployment"
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Documentation Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: documentation
+          path: doc/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./doc/html
+          enable_jekyll: false
+          allow_empty_commit: false
+          force_orphan: true
+          publish_branch: gh-pages
