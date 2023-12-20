@@ -7,11 +7,11 @@ IPyM is a C++-based Interior Point Method (IPM) Python Library tailored for Line
 min 0
 s.t.
 Ax - b\tau = 0,
-- A^T y + c\tau - x = 0,
-b^T y - c^T x = 0,
-x \geq 0,
-\tau \geq 0,
-y \geq 0.
+- A^T y + c\tau - x >= 0,
+b^T y - c^T x >= 0,
+x >= 0,
+\tau >= 0,
+y >= 0.
 ```
 
 
