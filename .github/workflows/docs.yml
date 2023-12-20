@@ -1,6 +1,9 @@
 name: Documentation
 
-on: [pull_request, push]
+on:
+  push:
+    branches: [ main ]
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
