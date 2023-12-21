@@ -1,3 +1,0 @@
-/data/IPyM/CMakeFiles/ipy_selfdual.dir
-/data/IPyM/CMakeFiles/edit_cache.dir
-/data/IPyM/CMakeFiles/rebuild_cache.dir
