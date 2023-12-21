@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -O3 -march=native -m64 -Wall -shared -fPIC -shared  -o ipy_selfdual.cpython-311-x86_64-linux-gnu.so CMakeFiles/ipy_selfdual.dir/ipy_selfdual.cpp.o  -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lgomp -lpthread -lm -ldl -lgfortran -lmetis -lcholmod -lgomp -Wl,-Bstatic -lpthread -Wl,-Bdynamic 

@@ -5,7 +5,6 @@
  */
 
 #include "cholmod.h"
-
 // #define EIGEN_USE_MKL_ALL
 
 // create define to decide between augmented and normal
@@ -14,12 +13,12 @@
 #define EIGEN_INITIALIZE_MATRICES_BY_ZERO
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <iostream>
-#include <pybind11/eigen.h>
-#include <pybind11/pybind11.h>
 #include <algorithm>
+#include <iostream>
 #include <limits>
 #include <omp.h>
+#include <pybind11/eigen.h>
+#include <pybind11/pybind11.h>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
@@ -28,28 +27,18 @@ using namespace Eigen;
 
 /**
  * @brief Converts a dense vector to a sparse diagonal matrix.
- * 
- * This function takes a dense vector and converts it into a sparse diagonal matrix.
- * The resulting sparse matrix has non-zero values only on its diagonal, where the
- * values are taken from the input vector.
- * 
+ *
+ * This function takes a dense vector and converts it into a sparse diagonal
+ * matrix. The resulting sparse matrix has non-zero values only on its diagonal,
+ * where the values are taken from the input vector.
+ *
  * @param vec The input dense vector.
  * @return The resulting sparse diagonal matrix.
  */
 Eigen::SparseMatrix<double>
 convertToSparseDiagonal(const Eigen::VectorXd &vec) {
     Eigen::SparseMatrix<double> mat(vec.size(), vec.size());
-
-    // Reserve space for diagonal elements
-    mat.reserve(Eigen::VectorXd::Constant(vec.size(), 1));
-
-    for (int i = 0; i < vec.size(); ++i) {
-        mat.insert(i, i) = vec(i);
-    }
-
-    // Make the sparse matrix compressed
-    // mat.makeCompressed();
-
+    mat = vec.asDiagonal();
     return mat;
 }
 
@@ -61,7 +50,8 @@ convertToSparseDiagonal(const Eigen::VectorXd &vec) {
  * @param c The objective function coefficients.
  * @param lb The lower bounds on the variables.
  * @param ub The upper bounds on the variables.
- * @param sense The sense of the linear constraints (1 for <=, -1 for >=, 0 for =).
+ * @param sense The sense of the linear constraints (1 for <=, -1 for >=, 0 for
+ * =).
  * @param As The output sparse coefficient matrix in standard form.
  * @param bs The output right-hand side vector in standard form.
  * @param cs The output objective function coefficients in standard form.
@@ -71,46 +61,46 @@ void convert_to_standard_form(
     const Eigen::VectorXd &c, const Eigen::VectorXd &lb,
     const Eigen::VectorXd &ub, const Eigen::VectorXd &sense,
     Eigen::SparseMatrix<double> &As, Eigen::VectorXd &bs, Eigen::VectorXd &cs) {
+
     double infty = std::numeric_limits<double>::infinity();
     int n = A.rows();
     int m = A.cols();
 
+    // Operate directly on input vectors wherever possible to reduce copies
     Eigen::VectorXd lo = lb;
     Eigen::VectorXd hi = ub;
 
     int n_free = 0, n_ubounds = 0, nzv = 0;
     int nv = A.cols();
-    // count number of upper bounds
-    for (int i = 0; i < lo.size(); ++i) {
-        double l = lo[i];
-        double h = hi[i];
 
-        if (l == -infty && h == infty) {
+    // Counting bounds
+    for (int i = 0; i < lo.size(); ++i) {
+        if (lo[i] == -infty && hi[i] == infty) {
             ++n_free;
-        } else if (std::isfinite(l) && std::isfinite(h)) {
+        } else if (std::isfinite(lo[i]) && std::isfinite(hi[i])) {
             ++n_ubounds;
-        } else if (l == -infty && std::isfinite(h)) {
+        } else if (lo[i] == -infty && std::isfinite(hi[i])) {
             // To be dealt with later
-        } else if (std::isfinite(l) && h == infty) {
+        } else if (std::isfinite(lo[i]) && hi[i] == infty) {
             // To be dealt with later
         } else {
             throw std::runtime_error("unexpected bounds");
         }
     }
 
-    std::vector<int> I(nzv), J(nzv); // row and column indices
-    std::vector<double> V(nzv);      // replace double with the actual type
-    std::vector<int> ind_ub(n_ubounds);
-    std::vector<double> val_ub(
-        n_ubounds); // replace double with the actual type
     int num_slacks = n - sense.sum();
-
     cs.conservativeResize(c.size() + n_free + num_slacks);
     cs.setZero();
     cs.head(m) = c;
 
-    bs.conservativeResize(b.size());
-    bs.head(n) = b;
+    bs = b; // Direct assignment
+
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(A.nonZeros() + num_slacks); // Reserve space to avoid reallocations
+
+    std::vector<int> ind_ub(n_ubounds);
+    std::vector<double> val_ub(
+        n_ubounds); 
 
     int free = 0, ubi = 0;
     nzv = 0;
@@ -123,32 +113,21 @@ void convert_to_standard_form(
             double v = it.value(); // Value at A(i, j)
 
             if (l == -infty && h == infty) {
-                // free variable
+                // Free variable
                 cs[j] = c[j];
                 cs[nv + free] = -c[j];
-
                 bs[i] -= (v * 0);
 
-                ++nzv;
-                I.push_back(i);
-                J.push_back(j);
-                V.push_back(v);
-
-                ++nzv;
-                I.push_back(i);
-                J.push_back(nv + free);
-                V.push_back(-v);
+                triplets.emplace_back(i, j, v);               // Add original value
+                triplets.emplace_back(i, nv + free, -v);      // Add negated value
 
                 ++free;
             } else if (std::isfinite(l) && std::isfinite(h)) {
                 // l <= x <= h
                 cs[j + free] = c[j];
-
                 bs[i] -= (v * l);
-                ++nzv;
-                I.push_back(i);
-                J.push_back(j);
-                V.push_back(v);
+                
+                triplets.emplace_back(i, j, v);               // Add value
 
                 ++ubi;
                 ind_ub.push_back(j);
@@ -156,21 +135,15 @@ void convert_to_standard_form(
             } else if (l == -infty && std::isfinite(h)) {
                 // x <= h
                 cs[j] = -c[j];
-
                 bs[i] -= (-v * h);
-                ++nzv;
-                I.push_back(i);
-                J.push_back(j);
-                V.push_back(-v);
+
+                triplets.emplace_back(i, j, -v);              // Add negated value
             } else if (std::isfinite(l) && h == infty) {
                 // l <= x
                 cs[j] = c[j];
-
                 bs[i] -= (v * l);
-                ++nzv;
-                I.push_back(i);
-                J.push_back(j);
-                V.push_back(v);
+
+                triplets.emplace_back(i, j, v);               // Add value
             } else {
                 throw std::runtime_error("Unexpected bounds");
             }
@@ -181,28 +154,15 @@ void convert_to_standard_form(
     int slack_counter = 0;
     for (int i = 0; i < sense.size(); ++i) {
         if (sense(i) == 0) {
-            ++nzv;
-            I.push_back(i);
-            J.push_back(nv + n_free + slack_counter);
-            V.push_back(1.0);
-
+            triplets.emplace_back(i, nv + n_free + slack_counter, 1.0);
             ++slack_counter;
         }
     }
 
-    std::vector<Eigen::Triplet<double>> triplets;
-
-    for (int k = 0; k < nzv; ++k) {
-        if (I[k] >= bs.size() || J[k] >= cs.size()) {
-            std::cout << "Out-of-bounds triplet: (" << I[k] << ", " << J[k]
-                      << ", " << V[k] << ")" << std::endl;
-        }
-        triplets.push_back(Eigen::Triplet<double>(I[k], J[k], V[k]));
-    }
+    // Construct As from triplets
     As.resize(bs.size(), cs.size());
     As.setFromTriplets(triplets.begin(), triplets.end());
     As.makeCompressed();
-
 }
 
 class SparseSolver {
@@ -255,7 +215,7 @@ public:
 
     /**
      * Factorizes the given sparse matrix using Cholesky decomposition.
-     * 
+     *
      * @param matrix The sparse matrix to be factorized.
      */
     void factorizeMatrix(
@@ -274,8 +234,9 @@ public:
     }
 
     /**
-     * Solves a linear system of equations using the Cholesky decomposition method.
-     * 
+     * Solves a linear system of equations using the Cholesky decomposition
+     * method.
+     *
      * @param rhs The right-hand side vector of the linear system.
      * @return The solution vector.
      */
@@ -290,10 +251,11 @@ public:
 private:
     /**
      * @brief Converts an Eigen sparse matrix to a cholmod_sparse matrix.
-     * 
-     * This function takes an Eigen sparse matrix and converts it to a cholmod_sparse matrix,
-     * which is a sparse matrix representation used by the CHOLMOD library.
-     * 
+     *
+     * This function takes an Eigen sparse matrix and converts it to a
+     * cholmod_sparse matrix, which is a sparse matrix representation used by
+     * the CHOLMOD library.
+     *
      * @param matrix The Eigen sparse matrix to be converted.
      * @return A pointer to the converted cholmod_sparse matrix.
      */
@@ -318,10 +280,11 @@ private:
 
     /**
      * @brief Converts an Eigen::VectorXd to a cholmod_dense object.
-     * 
-     * This function takes an Eigen::VectorXd object and converts it to a cholmod_dense object.
-     * The resulting cholmod_dense object has the same dimensions and data as the input vector.
-     * 
+     *
+     * This function takes an Eigen::VectorXd object and converts it to a
+     * cholmod_dense object. The resulting cholmod_dense object has the same
+     * dimensions and data as the input vector.
+     *
      * @param vector The Eigen::VectorXd object to be converted.
      * @return A pointer to the resulting cholmod_dense object.
      */
@@ -340,12 +303,14 @@ private:
 
     /**
      * @brief Converts a cholmod_dense vector to an Eigen::VectorXd.
-     * 
-     * This function takes a pointer to a cholmod_dense vector and returns an Eigen::VectorXd
-     * by mapping the data of the cholmod_dense vector to an Eigen::VectorXd object.
-     * 
+     *
+     * This function takes a pointer to a cholmod_dense vector and returns an
+     * Eigen::VectorXd by mapping the data of the cholmod_dense vector to an
+     * Eigen::VectorXd object.
+     *
      * @param vectorPtr A pointer to the cholmod_dense vector.
-     * @return An Eigen::VectorXd object containing the data of the cholmod_dense vector.
+     * @return An Eigen::VectorXd object containing the data of the
+     * cholmod_dense vector.
      */
     static Eigen::VectorXd viewAsEigen(cholmod_dense *vectorPtr) {
         return Eigen::VectorXd::Map(reinterpret_cast<double *>(vectorPtr->x),
@@ -354,8 +319,9 @@ private:
 };
 
 /**
- * Starts the linear solver by initializing the necessary data structures and performing factorization.
- * 
+ * Starts the linear solver by initializing the necessary data structures and
+ * performing factorization.
+ *
  * @param ls The SparseSolver object to be used for solving the linear system.
  * @param A The sparse matrix representing the system of linear equations.
  */
@@ -414,8 +380,10 @@ void start_linear_solver(SparseSolver &ls,
 
 /**
  * Updates the linear solver with new values for theta, regP, and regD.
- * If the AUGMENTED flag is defined, it efficiently updates the diagonal elements of the matrix S and refactors it.
- * If the AUGMENTED flag is not defined, it constructs the left-hand side (lhs) matrix for the normal equations using the given values of theta, regP, and regD, and factorizes it.
+ * If the AUGMENTED flag is defined, it efficiently updates the diagonal
+ * elements of the matrix S and refactors it. If the AUGMENTED flag is not
+ * defined, it constructs the left-hand side (lhs) matrix for the normal
+ * equations using the given values of theta, regP, and regD, and factorizes it.
  *
  * @param ls The SparseSolver object representing the linear solver.
  * @param theta The vector of theta values.
@@ -444,7 +412,6 @@ void update_linear_solver(SparseSolver &ls, const Eigen::VectorXd &theta,
     // Refactorize
     ls.factorizeMatrix(ls.S);
 #else
-
     // define lhs for normal equations
     Eigen::SparseMatrix<double> lhs(ls.n + ls.m, ls.n + ls.m);
     // define lhs as   A (\Theta^{-1} + R_{p})^{-1} A^{\top} + R_{d}
@@ -470,8 +437,8 @@ struct Residuals {
 /**
  * @brief Updates the residuals of a self-dual interior point method.
  *
- * This function calculates and updates the primal, upper bound, dual, and gap residuals
- * based on the given variables and parameters.
+ * This function calculates and updates the primal, upper bound, dual, and gap
+ * residuals based on the given variables and parameters.
  *
  * @param res The Residuals object to store the updated residuals.
  * @param x The primal variable vector.
@@ -498,7 +465,7 @@ void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
     // Calculate rp and its norm
     // primal residual
     res.rp.noalias() = tau * b - A * x;
-    // res.rpn = res.rp.norm();
+    res.rpn = res.rp.norm();
 
     // Calculate ru and its norm
     // uper bound residual
@@ -507,7 +474,6 @@ void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
         res.ru(ubi(i)) -= x(ubi(i));
     }
     res.ru.array() += tau * ubv.array();
-    // res.run = res.ru.norm();
 
     // Calculate rd and its norm
     // dual residual
@@ -515,17 +481,23 @@ void update_residuals(Residuals &res, const VectorXd &x, const VectorXd &lambda,
     for (int i = 0; i < ubi.size(); ++i) {
         res.rd(ubi(i)) += x(ubi(i));
     }
+
     // Calculate rg and its norm
     // gap residual
     res.rg = kappa + c.dot(x) - b.dot(lambda) + ubv.dot(w);
     res.rgn = std::sqrt(
         res.rg *
         res.rg); // Since rg is a scalar, its norm is the absolute value
+
+    // l = xl
+    // v = xu
+    // w = zu
+    // s = zl
 }
 
 /**
- * Solves the augmented system of equations to obtain the solution vectors dx and dy.
- * The augmented system is solved using a SparseSolver object.
+ * Solves the augmented system of equations to obtain the solution vectors dx
+ * and dy. The augmented system is solved using a SparseSolver object.
  *
  * @param dx The solution vector for dx.
  * @param dy The solution vector for dy.
@@ -562,7 +534,8 @@ void solve_augmented_system(Eigen::VectorXd &dx, Eigen::VectorXd &dy,
 }
 
 /**
- * Solves the augmented system of equations to compute the values of delta_x, delta_y, and delta_z.
+ * Solves the augmented system of equations to compute the values of delta_x,
+ * delta_y, and delta_z.
  *
  * @param delta_x The vector to store the computed values of delta_x.
  * @param delta_y The vector to store the computed values of delta_y.
@@ -601,8 +574,8 @@ void solve_augsys(Eigen::VectorXd &delta_x, Eigen::VectorXd &delta_y,
 }
 
 /**
- * Solves the Newton system of equations to update the variables Delta_x, Delta_lambda, Delta_w,
- * Delta_s, Delta_v, Delta_tau, and Delta_kappa.
+ * Solves the Newton system of equations to update the variables Delta_x,
+ * Delta_lambda, Delta_w, Delta_s, Delta_v, Delta_tau, and Delta_kappa.
  *
  * @param Delta_x The update for the variable x.
  * @param Delta_lambda The update for the variable lambda.
@@ -671,7 +644,7 @@ void solve_newton_system(
 
 /**
  * Calculates the maximum value of alpha based on the given vectors v and dv.
- * 
+ *
  * @param v The input vector.
  * @param dv The derivative vector.
  * @return The maximum value of alpha.
@@ -721,18 +694,6 @@ double max_alpha(const VectorXd &x, const VectorXd &dx, const VectorXd &v,
     return alpha;
 }
 
-/**
- * @brief Main function for the self-dual interior point method.
- * 
- * @param As Matrix A in sparse form
- * @param bs rhs vector b
- * @param cs cost vector c
- * @param lo lower bound vector
- * @param hi upper bound vector
- * @param sense constraint sense vector
- * @param tol tolerance
- * @return std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd, double> 
- */
 std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd, double>
 run_optimization(const Eigen::SparseMatrix<double> &As,
                  const Eigen::VectorXd &bs, const Eigen::VectorXd &cs,
@@ -854,7 +815,11 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
     Eigen::VectorXd t_xs, t_vw;
     // Delta calculations
     double delta_0, bl_dot_lambda, correction;
-    
+
+    // keep old lambda and x for results
+    // Eigen::VectorXd x_old = x;
+    // Eigen::VectorXd lambda_old = lambda;
+
     for (int k = 0; k < max_iter; ++k) {
 
         // zero the necessary variables
@@ -879,6 +844,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         mu = (tau * kappa + x.dot(s) + v.dot(w)) / (n + ubi.size() + 1);
 
         // calculate _p = max(|rp| / (τ * (1 + |b|)), |ru| / (τ * (1 + |u|)))
+        // calculate _p = max(|rp| / (τ * (1 + |b|)), |ru| / (τ * (1 + |u|)))
         bl_dot_lambda = b.dot(lambda);
 
         _p = std::fmax(res.rp.lpNorm<Eigen::Infinity>() /
@@ -892,7 +858,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         _g = std::abs(c.dot(x) - bl_dot_lambda) /
              (tau + std::abs(bl_dot_lambda));
 
-        //   check optimality
+        //  check optimality
         if (_d < tol) {
             break;
         }
@@ -901,12 +867,13 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
             break;
         }
 
-        // Vectorized scaling factors computation
+        // scaling factors
         theta_vw = w.cwiseQuotient(v);
         theta_xs = s.cwiseQuotient(x);
 
-        for (int i = 0; i < ubi.size(); ++i) {
-            theta_xs[ubi[i]] += theta_vw[i];
+        for (int i = 0; i < ubi.size(); i++) {
+            int index = ubi[i];
+            theta_xs[index] += theta_vw[i];
         }
 
         // update regularizations
@@ -915,7 +882,6 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         regP = regP.cwiseMax(r_min);
         regD /= 10.0;
         regD = regD.cwiseMax(r_min);
-
         // Scalar operation for regG
         regG = std::max(r_min, regG / 10.0);
 
@@ -978,6 +944,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         // compute high order corrections like Tulip
         while ((ncor <= 3) && (alpha < 0.9995)) {
             // Tentative step length
+            // alpha_ = alpha;
             ncor += 1;
             alpha_ = std::min(1.0, 2.0 * alpha);
 
@@ -985,12 +952,15 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
             mu_l = beta * mu * gamma;
             mu_u = gamma * mu / beta;
 
+            // check if the targets are feasible
             // Temporary variables for xs and vw
             xs = x + alpha_ * Delta_x;
             xs.array() *= (s + alpha_ * Delta_s).array();
             vw = v + alpha_ * Delta_v;
             vw.array() *= (w + alpha_ * Delta_w).array();
 
+            t_xs_lower = (xs.array() < mu_l).select(mu_l - xs.array(), 0);
+            t_xs_upper = (xs.array() > mu_u).select(mu_u - xs.array(), 0);
 
             t_vw_lower = (vw.array() < mu_l).select(mu_l - vw.array(), 0);
             t_vw_upper = (vw.array() > mu_u).select(mu_u - vw.array(), 0);
@@ -1014,9 +984,10 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
             t0 = std::clamp(taukappa, mu_l, mu_u) - taukappa;
 
             // correct xs, vw and t0
-            correction = (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
-            t_xs.array() -= correction;
-            t_vw.array() -= correction;
+            t_xs =
+                t_xs.array() - (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
+            t_vw =
+                t_vw.array() - (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
             t0 = t0 - (t_xs.sum() + t_vw.sum() + t0) / (nv + nu + 1);
 
             // create temporary Deltas to store the values of Delta_x, Delta_y,
@@ -1042,6 +1013,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
                           Delta_w_c, tau, Delta_tau_c, kappa, Delta_kappa_c);
 
             if (alpha_c > alpha_) {
+                // std::cout << "corrected!" << std::endl;
                 Delta_x = Delta_x_c;
                 Delta_lambda = Delta_lambda_c;
                 Delta_w = Delta_w_c;
@@ -1059,6 +1031,9 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
 
         // multiply alpha by 0.99
         alpha *= 0.9995;
+
+        // x_old = x;
+        // lambda_old = lambda;
 
         // Update iterates
         x += alpha * Delta_x;
@@ -1081,7 +1056,7 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
         if (l == -infty && h == infty) {
             // For free variables, we had split them into x+ and x-.
             original_x[j] = (x[j + free_var] - x[nv_orig + free_var]) * inv_tau;
-            free_var++;
+            free_var += 1;
         } else if (std::isfinite(l) && std::isfinite(h)) {
             // For variables with both lower and upper bounds.
             original_x[j] = l + x[j] * inv_tau;
@@ -1109,14 +1084,6 @@ run_optimization(const Eigen::SparseMatrix<double> &As,
     return std::make_tuple(x, lambda, s, objetivo);
 }
 
-/**
- * @brief Binds the module to Python using Pybind11.
- *
- * This function is used to bind the module to Python using Pybind11. It takes
- * the module name and a function pointer to the module definition function.
- *
- * @param m The module object representing the module being bound.
- */
 PYBIND11_MODULE(ipy_selfdual, m) {
     m.def("run_optimization", &run_optimization,
           "A function to run the optimization");
