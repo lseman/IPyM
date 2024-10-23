@@ -8,15 +8,33 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Compiler options
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -m64 -Wall -shared -fPIC")
 
+# Attempt to include CPM.cmake from provided path
+include(cmake/CPM.cmake OPTIONAL)
+
+# Check if CPM was included, if not, fetch and include CPM
+if(NOT COMMAND CPMAddPackage)
+  # Include FetchContent module
+  include(FetchContent)
+  # Declare CPM.cmake as a FetchContent
+  FetchContent_Declare(
+    CPM
+    GIT_REPOSITORY https://github.com/cpm-cmake/CPM.cmake.git
+    GIT_TAG v0.40.2)
+  # Fetch CPM
+  FetchContent_MakeAvailable(CPM)
+  # Include CPM.cmake after it has been fetched
+  include(${cpm_SOURCE_DIR}/cmake/CPM.cmake)
+endif()
+
+
 # Include directories
-include_directories(/usr/include/python3.11)
-include_directories($(python3 -m pybind11 --includes))
+cpmaddpackage(NAME pybind11 GITHUB_REPOSITORY pybind/pybind11 GIT_TAG v2.13.6)
+
+
 include_directories(/usr/include/eigen3)
 include_directories(/usr/include/suitesparse)
 
 # Find Python, pybind11, and OpenMP
-find_package(Python COMPONENTS Interpreter Development)
-find_package(pybind11 CONFIG)
 find_package(OpenMP)
 
 # Add the executable
@@ -34,6 +52,8 @@ target_link_libraries(ipy_selfdual PRIVATE
 if(OpenMP_CXX_FOUND)
     target_link_libraries(ipy_selfdual PRIVATE OpenMP::OpenMP_CXX)
 endif()
+
+target_link_libraries(ipy_selfdual PRIVATE pybind11::module)
 
 # Get the Python extension suffix
 execute_process(
