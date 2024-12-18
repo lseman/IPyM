@@ -30,6 +30,21 @@ endif()
 # Include directories
 cpmaddpackage(NAME pybind11 GITHUB_REPOSITORY pybind/pybind11 GIT_TAG v2.13.6)
 
+cpmaddpackage(
+  NAME
+  stdexec
+  GITHUB_REPOSITORY
+  NVIDIA/stdexec
+  GIT_TAG
+  main
+  OPTIONS
+  "STDEXEC_BUILD_TESTS OFF"
+  "STDEXEC_BUILD_EXAMPLES OFF"
+  "STDEXEC_BUILD_BENCHMARKS OFF"
+  "STDEXEC_BUILD_DOCS OFF"
+  "BUILD_TESTING OFF")
+string(REPLACE "-fconcepts-diagnostics-depth=10" "" CMAKE_CXX_FLAGS
+               "${CMAKE_CXX_FLAGS}")
 
 include_directories(/usr/include/eigen3)
 include_directories(/usr/include/suitesparse)
@@ -38,7 +53,7 @@ include_directories(/usr/include/suitesparse)
 find_package(OpenMP)
 
 # Add the executable
-add_library(ipy_selfdual MODULE ipy_selfdual.cpp)
+add_library(ipy_selfdual MODULE IPSolver.cpp)
 
 # Link libraries
 target_link_libraries(ipy_selfdual PRIVATE
@@ -54,6 +69,7 @@ if(OpenMP_CXX_FOUND)
 endif()
 
 target_link_libraries(ipy_selfdual PRIVATE pybind11::module)
+target_link_libraries(ipy_selfdual PRIVATE STDEXEC::stdexec)
 
 # Get the Python extension suffix
 execute_process(
